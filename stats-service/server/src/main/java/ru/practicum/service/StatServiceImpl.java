@@ -1,5 +1,6 @@
 package ru.practicum.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.EndpointHitDto;
@@ -15,14 +16,10 @@ import java.util.List;
 import static java.util.stream.Collectors.toList;
 
 @Service
+@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class StatServiceImpl implements StatService {
-    private StatRepository repository;
-
-
-    public StatServiceImpl(StatRepository repository) {
-        this.repository = repository;
-    }
+    private final StatRepository repository;
 
     @Override
     @Transactional
