@@ -27,9 +27,6 @@ public class StatController {
                                                   @RequestParam(required = false) List<String> uris,
                                                   @RequestParam(defaultValue = "false") Boolean unique) {
         validateParamForGetMapping(start, end);
-        if (uris == null) {
-            return new ResponseEntity<>(service.getStatsList(null, start, end, unique), HttpStatus.OK);
-        }
         return new ResponseEntity<>(service.getStatsList(uris, start, end, unique), HttpStatus.OK);
     }
 
