@@ -12,7 +12,6 @@ import ru.practicum.mapper.ViewStatsMapper;
 import ru.practicum.repository.StatRepository;
 
 import java.time.LocalDateTime;
-import java.util.Collection;
 import java.util.List;
 
 import static java.util.stream.Collectors.toList;
