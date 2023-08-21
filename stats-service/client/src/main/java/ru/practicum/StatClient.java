@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 
+import java.net.URLEncoder;
 import java.util.List;
 import java.util.Map;
 
@@ -30,8 +31,8 @@ public class StatClient extends BaseClient {
 
     public ResponseEntity<Object> getStats(String start, String end, List<String> uris, Boolean unique) {
         Map<String, Object> parameters = Map.of(
-                "start", start,
-                "end", end,
+                "start", UrlEncodeUtils.encode(start),
+                "end", UrlEncodeUtils.encode(end),
                 "uris", uris,
                 "unique", unique
         );

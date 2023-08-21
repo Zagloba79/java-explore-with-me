@@ -16,5 +16,4 @@ public class DateMapper {
     public static String toStringFormat(LocalDateTime date) {
         return date.format(dateMapper);
     }
-
 }
