@@ -4,9 +4,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import ru.practicum.ewm.enums.State;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -15,13 +16,25 @@ import javax.persistence.Table;
 @Table(name = "events")
 @AllArgsConstructor
 public class Event {
-    private String annotation;
-    private Integer category;
-    private String description;
-    private String eventDate;
-    private Location Location;
-    private boolean paid;
-    private Integer participantLimit;
-    private boolean requestModeration;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
     private String title;
+    private String annotation;
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Category category;
+    private String description;
+    private LocalDateTime eventDate;
+    private Location location;
+    private LocalDateTime createdOn;
+    @ManyToOne
+    @JoinColumn(name = "initiator_id")
+    private User initiator;
+    private Boolean paid;
+    private Integer participantLimit;
+    private LocalDateTime publishedOn;
+    private Boolean requestModeration;
+    @Enumerated(EnumType.STRING)
+    private State state;
 }

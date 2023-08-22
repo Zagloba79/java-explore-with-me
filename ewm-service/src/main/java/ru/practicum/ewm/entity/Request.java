@@ -13,17 +13,19 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "requests")
+@Table(name = "events")
 @AllArgsConstructor
 public class Request {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(nullable = false)
+    @Column
     private LocalDateTime created;
-    @Column(name = "event_id", nullable = false)
-    private Long eventId;
-    @JoinColumn(name = "requester_id", nullable = false)
-    private Long requesterId;
+    @ManyToOne
+    @JoinColumn(name = "event_id")
+    private Event event;
+    @JoinColumn(name = "requester_id")
+    private User requester;
+    @Enumerated(EnumType.STRING)
     private Status status;
 }
