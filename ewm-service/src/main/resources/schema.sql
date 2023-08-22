@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS events (
   id BIGSERIAL NOT NULL,
   annotation VARCHAR(512),
   category_id BIGINT,
-  description VARCHAR(512),
+  description VARCHAR(1000),
   event_date VARCHAR(255),
   location_id BIGINT,
   created_on TIMESTAMP WITHOUT TIME ZONE NOT NULL,
