@@ -19,22 +19,28 @@ public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String title;
     private String annotation;
-    @ManyToOne
-    @JoinColumn(name = "category_id")
+    @OneToOne
+    @JoinColumn(name = "category_id", referencedColumnName = "id")
     private Category category;
+    private int confirmedRequests;
+    @Column(name = "created_On")
+    private LocalDateTime createdOn;
+    @Column(nullable = false)
     private String description;
     private LocalDateTime eventDate;
-    private Location location;
-    private LocalDateTime createdOn;
-    @ManyToOne
-    @JoinColumn(name = "initiator_id")
+    @OneToOne
+    @JoinColumn(name = "initiator_id", referencedColumnName = "id")
     private User initiator;
+    @OneToOne(cascade = {CascadeType.ALL})
+    @JoinColumn(name = "location_id", referencedColumnName = "id")
+    private Location location;
     private Boolean paid;
-    private Integer participantLimit;
+    private int participantLimit;
     private LocalDateTime publishedOn;
     private Boolean requestModeration;
     @Enumerated(EnumType.STRING)
     private State state;
+    private String title;
+    private Long views;
 }
