@@ -15,7 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 public class UpdateCompilationRequest {
     private List<Long> events;
-    private boolean pinned;
+    private Boolean pinned;
     @Min(1)
     @Max(50)
     private String title;

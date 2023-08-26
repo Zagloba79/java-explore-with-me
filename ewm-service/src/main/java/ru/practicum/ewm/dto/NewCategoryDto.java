@@ -1,18 +1,19 @@
-package ru.practicum.ewm.dto.user;
+package ru.practicum.ewm.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class UserShortDto {
-    private Long id;
-    @NotBlank
+public class NewCategoryDto {
+    @Min(1)
+    @Max(50)
     private String name;
 }

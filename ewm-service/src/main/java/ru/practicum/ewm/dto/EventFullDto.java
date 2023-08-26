@@ -1,11 +1,6 @@
-package ru.practicum.ewm.dto.event;
+package ru.practicum.ewm.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import ru.practicum.ewm.dto.user.UserShortDto;
-import ru.practicum.ewm.dto.category.CategoryDto;
+import lombok.*;
 import ru.practicum.ewm.entity.Location;
 import ru.practicum.ewm.enums.State;
 
@@ -13,6 +8,7 @@ import ru.practicum.ewm.enums.State;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class EventFullDto {
     private Long id;
     private String annotation;

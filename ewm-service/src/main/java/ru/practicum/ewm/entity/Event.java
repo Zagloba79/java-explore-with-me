@@ -1,9 +1,6 @@
 package ru.practicum.ewm.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import ru.practicum.ewm.enums.State;
 
 import javax.persistence.*;
@@ -15,6 +12,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "events")
 @AllArgsConstructor
+@Builder
 public class Event {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -23,7 +21,7 @@ public class Event {
     @OneToOne
     @JoinColumn(name = "category_id", referencedColumnName = "id")
     private Category category;
-    private int confirmedRequests;
+    private Long confirmedRequests;
     @Column(name = "created_On")
     private LocalDateTime createdOn;
     @Column(nullable = false)

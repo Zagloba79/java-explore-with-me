@@ -1,4 +1,4 @@
-package ru.practicum.ewm.dto.category;
+package ru.practicum.ewm.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,8 +12,11 @@ import javax.validation.constraints.Min;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class NewCategoryDto {
-    @Min(1)
-    @Max(50)
+public class NewUserRequest {
+    @Min(6)
+    @Max(254)
+    private String email;
+    @Min(2)
+    @Max(250)
     private String name;
 }

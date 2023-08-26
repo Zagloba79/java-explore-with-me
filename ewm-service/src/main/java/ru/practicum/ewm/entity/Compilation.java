@@ -1,9 +1,6 @@
 package ru.practicum.ewm.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 import java.util.Set;
@@ -14,6 +11,7 @@ import java.util.Set;
 @Entity
 @Table(name = "compilations")
 @AllArgsConstructor
+@Builder
 public class Compilation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

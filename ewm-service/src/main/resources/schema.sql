@@ -24,19 +24,19 @@ CREATE TABLE IF NOT EXISTS locations (
 
 CREATE TABLE IF NOT EXISTS events (
   id BIGSERIAL NOT NULL,
-  annotation VARCHAR(512),
-  category_id BIGINT,
-  description VARCHAR(1000),
-  event_date VARCHAR(255),
-  location_id BIGINT,
+  annotation VARCHAR(2000) NOT NULL,
+  category_id BIGINT NOT NULL,
+  description VARCHAR(7000) NOT NULL,
+  event_date TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+  location_id BIGINT NOT NULL,
   created_on TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-  initiator_id BIGINT,
-  paid boolean,
-  participant_limit BIGINT,
+  initiator_id BIGINT NOT NULL,
+  paid boolean DEFAULT FALSE,
+  participant_limit BIGINT NOT NULL,
   published_on TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-  request_moderation boolean,
-  title VARCHAR(512),
-  state VARCHAR(255),
+  request_moderation BOOLEAN DEFAULT TRUE,
+  title VARCHAR(120),
+  state VARCHAR(50),
   CONSTRAINT PK_EVENT PRIMARY KEY (id),
   CONSTRAINT EVENTS_CATEGORIES_ID_FK FOREIGN KEY (category_id) REFERENCES categories (ID) ON DELETE CASCADE,
   CONSTRAINT EVENTS_LOCATIONS_ID_FK FOREIGN KEY (location_id) REFERENCES locations (ID) ON DELETE CASCADE,
@@ -48,7 +48,7 @@ CREATE TABLE IF NOT EXISTS requests (
   created TIMESTAMP WITHOUT TIME ZONE NOT NULL,
   event_id BIGINT NOT NULL,
   requester_id BIGINT NOT NULL,
-  status VARCHAR(255) NOT NULL,
+  status VARCHAR(50) NOT NULL,
   CONSTRAINT PK_LOCATION PRIMARY KEY (id),
   CONSTRAINT REQUESTS_EVENTS_ID_FK FOREIGN KEY (event_id) REFERENCES events (ID) ON DELETE CASCADE,
   CONSTRAINT REQUESTS_USERS_ID_FK FOREIGN KEY (requester_id) REFERENCES users (ID) ON DELETE CASCADE
@@ -56,11 +56,15 @@ CREATE TABLE IF NOT EXISTS requests (
 
 CREATE TABLE IF NOT EXISTS compilations (
   id BIGSERIAL NOT NULL,
-  created TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-  event_id BIGINT NOT NULL,
-  requester_id BIGINT NOT NULL,
-  status VARCHAR(255) NOT NULL,
-  CONSTRAINT PK_LOCATION PRIMARY KEY (id),
-  CONSTRAINT REQUESTS_EVENTS_ID_FK FOREIGN KEY (event_id) REFERENCES events (ID) ON DELETE CASCADE,
-  CONSTRAINT REQUESTS_USERS_ID_FK FOREIGN KEY (requester_id) REFERENCES users (ID) ON DELETE CASCADE
+  pinned BOOLEAN NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  CONSTRAINT pk_compilations PRIMARY KEY (id)
+);
+
+CREATE TABLE IF NOT EXISTS compilations_events (
+    compilations_id BIGINT NOT NULL,
+    events_id BIGINT NOT NULL,
+    CONSTRAINT pk_compilations_events PRIMARY KEY (compilations_id, events_id),
+    CONSTRAINT fk_compilations FOREIGN KEY (compilations_id) REFERENCES compilations (id) ON DELETE CASCADE,
+    CONSTRAINT fk_events FOREIGN KEY (events_id) REFERENCES event (id) ON DELETE CASCADE
 );

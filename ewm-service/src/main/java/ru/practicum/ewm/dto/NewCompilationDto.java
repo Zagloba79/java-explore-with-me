@@ -1,4 +1,4 @@
-package ru.practicum.ewm.dto.request;
+package ru.practicum.ewm.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -7,16 +7,16 @@ import lombok.Setter;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
+import java.util.List;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class NewUserRequest {
-    @Min(6)
-    @Max(254)
-    private String email;
-    @Min(2)
-    @Max(250)
-    private String name;
+public class NewCompilationDto {
+    private List<Long> events;
+    private Boolean pinned = false;
+    @Min(1)
+    @Max(50)
+    private String title;
 }
