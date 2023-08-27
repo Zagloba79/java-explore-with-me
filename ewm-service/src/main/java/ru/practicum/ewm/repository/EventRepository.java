@@ -29,4 +29,6 @@ public interface EventRepository extends JpaRepository<Event, Long> {
                                    LocalDateTime start, LocalDateTime end, Pageable pageable);
 
     Optional<Event> findByIdAndInitiatorId(long eventId, long userId);
+
+
 }
