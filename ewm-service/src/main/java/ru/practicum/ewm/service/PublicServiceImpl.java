@@ -17,13 +17,10 @@ import ru.practicum.ewm.mapper.CompilationMapper;
 import ru.practicum.ewm.repository.CategoryRepository;
 import ru.practicum.ewm.repository.CompilationRepository;
 import ru.practicum.ewm.repository.EventRepository;
-import ru.practicum.EndpointHitDto;
-import ru.practicum.StatClient;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static java.util.stream.Collectors.toList;
 import static ru.practicum.ewm.enums.State.PUBLISHED;
@@ -35,7 +32,7 @@ public class PublicServiceImpl implements PublicService {
     private final CategoryRepository categoriesRepository;
     private final EventRepository eventRepository;
     private final CompilationRepository compilationRepository;
-    private final StatClient statClient;
+    private final StatService statService;
     @Value("${ewm.service.name}")
     private String serviceName;
 
@@ -55,8 +52,29 @@ public class PublicServiceImpl implements PublicService {
     }
 
     @Override
-    public Set<EventShortDto> getAllEvents(String text, List<Long> categories, Boolean paid, LocalDateTime rangeStart, LocalDateTime rangeEnd, Boolean onlyAvailable, String sort, int from, int size, HttpServletRequest request) {
-        return null;
+    public List<EventShortDto> getAllEvents(String text, List<Long> categories, Boolean paid,
+                                           LocalDateTime rangeStart, LocalDateTime rangeEnd,
+                                           Boolean onlyAvailable, String sort, int from, int size,
+                                           HttpServletRequest request) {
+        List<Event> events = eventRepository.findEventsByParamsForEverybody(text, categories, paid, rangeStart,
+                rangeEnd, onlyAvailable);
+        Map<Long, Long> view = statService.toView(events);
+        Map<Long, Long> confirmedRequest = statService.toEventConfirmedRequests(events);
+        List<EventShortDto> eventShorts = new ArrayList<>();
+        for (Event event : events) {
+            eventShorts.add(EventMapper.toEventShortDto(event,
+                    view.getOrDefault(event.getId(), 0L),
+                    confirmedRequest.getOrDefault(event.getId(), 0L)));
+        }
+        if (sort != null) {
+            if (sort.equals("EVENT_DATE")) {
+                eventShorts = eventShorts.stream().sorted(Comparator.comparing(EventShortDto::getEventDate)).collect(toList());
+            } else if (sort.equals("VIEWS")) {
+                eventShorts = eventShorts.stream().sorted(Comparator.comparing(EventShortDto::getViews)).collect(toList());
+            }
+        }
+        statService.saveEndpointHit(request, serviceName);
+        return eventShorts;
     }
 
     @Override
@@ -66,7 +84,7 @@ public class PublicServiceImpl implements PublicService {
         if (!event.getState().equals(PUBLISHED)) {
             throw new OperationIsNotSupported("Event is not published");
         }
-        saveEndpointHit(request);
+        statService.saveEndpointHit(request, serviceName);
         event.setViews(event.getViews() + 1);
         eventRepository.flush();
         return EventMapper.toEventFullDto(event);
@@ -92,15 +110,6 @@ public class PublicServiceImpl implements PublicService {
         return CompilationMapper.toCompilationDto(compilation);
     }
 
-    private void saveEndpointHit(HttpServletRequest request) {
-        EndpointHitDto endpointHit = EndpointHitDto.builder()
-                .ip(request.getRemoteAddr())
-                .uri(request.getRequestURI())
-                .app(serviceName)
-                .timestamp(LocalDateTime.now())
-                .build();
-        statClient.create(endpointHit);
-    }
 
     private EventPageRequest createPageable(String sort, int from, int size) {
         EventPageRequest pageable = null;
