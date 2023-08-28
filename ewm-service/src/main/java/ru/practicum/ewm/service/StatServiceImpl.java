@@ -3,7 +3,6 @@ package ru.practicum.ewm.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,9 +33,6 @@ public class StatServiceImpl implements StatService {
     private final StatClient statClient;
 
     private final ObjectMapper objectMapper;
-
-    @Value("${main_app}")
-    private String app;
 
     @Override
     public Map<Long, Long> toEventConfirmedRequests(List<Event> events) {
