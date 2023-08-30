@@ -65,7 +65,7 @@ public class PublicServiceImpl implements PublicService {
                 rangeEnd = LocalDateTime.now().plusYears(100);
             }
         }
-        List<Event> events = eventRepository.findEventsByParamsForEverybody(text, categories, paid, rangeStart,
+        List<Event> events = eventRepository.getAllByParam(text, categories, paid, rangeStart,
                 rangeEnd, onlyAvailable);
         if (sort != null) {
             if (sort.equals("EVENT_DATE")) {

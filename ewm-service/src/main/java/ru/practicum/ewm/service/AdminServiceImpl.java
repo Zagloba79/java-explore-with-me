@@ -192,7 +192,7 @@ public class AdminServiceImpl implements AdminService {
     public List<EventFullDto> getAllEvents(List<Long> users, List<State> states, List<Long> categories,
                                            LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size) {
         Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size, Sort.by("id").ascending());
-        List<Event> events = eventRepository.findEventsByParamsForAdmin(users, states, categories, rangeStart, rangeEnd, pageable);
+        List<Event> events = eventRepository.findAllByParam(users, states, categories, rangeStart, rangeEnd, pageable);
         if (events.isEmpty()) {
             return Collections.emptyList();
         }

@@ -65,7 +65,8 @@ public class AdminController {
 
     @PatchMapping("/compilations/{compId}")
     public ResponseEntity<CompilationDto> updateCompilation(@PathVariable long compId,
-                                            @RequestBody @Valid UpdateCompilationRequest updateCompilationRequest) {
+                                                            @RequestBody
+                                                            @Valid UpdateCompilationRequest updateCompilationRequest) {
         return new ResponseEntity<>(service.updateCompilation(compId, updateCompilationRequest), HttpStatus.OK);
     }
 
@@ -77,18 +78,24 @@ public class AdminController {
 
     @PatchMapping("/events/{eventId}")
     public ResponseEntity<EventFullDto> updateEvent(@PathVariable long eventId,
-                                    @RequestBody @Valid UpdateEventAdminRequest updateEventAdminRequest) {
+                                                    @RequestBody
+                                                    @Valid UpdateEventAdminRequest updateEventAdminRequest) {
         return new ResponseEntity<>(service.updateEvent(eventId, updateEventAdminRequest), HttpStatus.OK);
     }
 
     @GetMapping("/events")
     public ResponseEntity<List<EventFullDto>> getEvents(@RequestParam(required = false) List<Long> users,
-                                        @RequestParam(required = false) List<State> states,
-                                        @RequestParam(required = false) List<Long> categories,
-                                        @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeStart,
-                                        @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd,
-                                        @RequestParam(defaultValue = "0") @PositiveOrZero int from,
-                                        @RequestParam(defaultValue = "10") @Positive int size) {
-        return new ResponseEntity<>(service.getAllEvents(users, states, categories, rangeStart, rangeEnd, from, size), HttpStatus.OK);
+                                                        @RequestParam(required = false) List<State> states,
+                                                        @RequestParam(required = false) List<Long> categories,
+                                                        @RequestParam(required = false)
+                                                        @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+                                                        LocalDateTime rangeStart,
+                                                        @RequestParam(required = false)
+                                                        @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+                                                        LocalDateTime rangeEnd,
+                                                        @RequestParam(defaultValue = "0") @PositiveOrZero int from,
+                                                        @RequestParam(defaultValue = "10") @Positive int size) {
+        return new ResponseEntity<>(service.getAllEvents(
+                users, states, categories, rangeStart, rangeEnd, from, size), HttpStatus.OK);
     }
 }

@@ -23,14 +23,14 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     Set<Event> findAllByIdIn(List<Long> eventIds);
 
     @Query("SELECT event " +
-            "FROM Event as event " +
-            "WHERE (event.initiator.id IN ?1 OR ?1 is null) " +
+            "FROM Event AS event " +
+            "WHERE (event.initiator.id IN ?1 OR ?1 IS null) " +
             "AND (event.state IN ?2 OR ?2 IS null) " +
             "AND (event.category.id IN ?3 OR ?3 IS null) " +
             "AND (event.eventDate > ?4 OR ?4 IS null) " +
             "AND (event.eventDate < ?5 OR ?5 IS null) ")
-    List<Event> findEventsByParamsForAdmin(List<Long> users, List<State> states, List<Long> categories,
-                                           LocalDateTime start, LocalDateTime end, Pageable pageable);
+    List<Event> findAllByParam(List<Long> users, List<State> states, List<Long> categories,
+                               LocalDateTime start, LocalDateTime end, Pageable pageable);
 
     Optional<Event> findByIdAndInitiatorId(long eventId, long userId);
 
@@ -45,6 +45,6 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             "(SELECT count(*) FROM Request AS r WHERE event.id = r.event.id))) " +
             "OR (event.participantLimit > 0 )) " +
             "AND event.state = 'PUBLISHED'")
-    List<Event> findEventsByParamsForEverybody(String text, List<Long> categories, Boolean paid, LocalDateTime rangeStart,
-                                               LocalDateTime rangeEnd, Boolean onlyAvailable);
+    List<Event> getAllByParam(String text, List<Long> categories, Boolean paid, LocalDateTime rangeStart,
+                              LocalDateTime rangeEnd, Boolean onlyAvailable);
 }
