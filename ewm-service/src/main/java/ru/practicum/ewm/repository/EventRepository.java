@@ -35,7 +35,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     Optional<Event> findByIdAndInitiatorId(long eventId, long userId);
 
     @Query("SELECT event " +
-            "FROM Event as event " +
+            "FROM Event AS event " +
             "WHERE ((?1 is null) OR ((lower(event.annotation) LIKE CONTACT('%', lower(?1), '%')) OR " +
             "(lower(event.description) LIKE CONTACT('%', lower(?1), '%')))) " +
             "AND (event.category.id IN ?2 OR ?2 IS null) " +
