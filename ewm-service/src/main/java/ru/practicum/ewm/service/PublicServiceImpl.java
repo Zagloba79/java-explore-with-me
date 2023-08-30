@@ -6,6 +6,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.EndpointHitDto;
+import ru.practicum.StatClient;
 import ru.practicum.ewm.dto.*;
 import ru.practicum.ewm.entity.*;
 import ru.practicum.ewm.exception.ObjectNotFoundException;
@@ -30,8 +32,7 @@ public class PublicServiceImpl implements PublicService {
     private final CategoryRepository categoriesRepository;
     private final EventRepository eventRepository;
     private final CompilationRepository compilationRepository;
-    private final StatService statService;
-    private final String serviceName = "ewm-main-service";
+    private final StatClient statClient;
 
     @Override
     public List<CategoryDto> getAllCategories(int from, int size) {
@@ -75,7 +76,7 @@ public class PublicServiceImpl implements PublicService {
         }
         List<EventShortDto> eventShorts = new ArrayList<>();
         for (Event event : events) {
-            statService.saveEndpointHit(request, serviceName);
+            saveEndpointHit(request);
             event.setViews(event.getViews() + 1);
             eventShorts.add(EventMapper.toEventShortDto(event));
         }
@@ -89,7 +90,7 @@ public class PublicServiceImpl implements PublicService {
         if (!event.getState().equals(PUBLISHED)) {
             throw new ObjectNotFoundException("Event is not published");
         }
-        statService.saveEndpointHit(request, serviceName);
+        saveEndpointHit(request);
         event.setViews(event.getViews() + 1);
         eventRepository.save(event);
         return EventMapper.toEventFullDto(event);
@@ -116,5 +117,16 @@ public class PublicServiceImpl implements PublicService {
         Compilation compilation = compilationRepository.findById(comId)
                 .orElseThrow(() -> new ObjectNotFoundException("Compilation not found"));
         return CompilationMapper.toCompilationDto(compilation);
+    }
+
+    @Transactional
+    private void saveEndpointHit(HttpServletRequest request) {
+        EndpointHitDto endpointHit = EndpointHitDto.builder()
+                .app("ewm-main-service")
+                .uri(request.getRequestURI())
+                .ip(request.getRemoteAddr())
+                .timestamp(LocalDateTime.now())
+                .build();
+        statClient.create(endpointHit);
     }
 }

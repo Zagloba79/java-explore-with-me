@@ -139,7 +139,7 @@ public class AdminServiceImpl implements AdminService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ObjectNotFoundException("Event not found"));
         if (event.getEventDate().isBefore(LocalDateTime.now().plusHours(1))) {
-            throw new OperationIsNotSupported("Поздняк метаться");
+            throw new OperationIsNotSupportedException("Поздняк метаться");
         }
         if (eventDto.getAnnotation() != null && !eventDto.getTitle().isBlank()) {
             event.setAnnotation(eventDto.getAnnotation());
@@ -153,7 +153,7 @@ public class AdminServiceImpl implements AdminService {
         }
         if (eventDto.getEventDate() != null) {
             if (eventDto.getEventDate().isBefore(LocalDateTime.now().plusHours(1))) {
-                throw new OperationIsNotSupported("Поздняк метаться");
+                throw new OperationIsNotSupportedException("Поздняк метаться");
             } else {
                 event.setEventDate(eventDto.getEventDate());
             }
@@ -172,7 +172,7 @@ public class AdminServiceImpl implements AdminService {
         }
         if (eventDto.getStateAction() != null) {
             if (!event.getState().equals(PENDING)) {
-                throw new OperationIsNotSupported("Можно изменять события только в статусе 'Pending'");
+                throw new OperationIsNotSupportedException("Можно изменять события только в статусе 'Pending'");
             }
             if (eventDto.getStateAction().equals(StateActionForAdmin.PUBLISH_EVENT)) {
                 event.setState(State.PUBLISHED);

@@ -6,6 +6,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.EndpointHitDto;
+import ru.practicum.StatClient;
 import ru.practicum.ewm.dto.*;
 import ru.practicum.ewm.entity.*;
 import ru.practicum.ewm.enums.State;
@@ -37,8 +39,7 @@ public class PrivateServiceImpl implements PrivateService {
     private final UserRepository userRepository;
     private final RequestRepository requestRepository;
     private final CategoryRepository categoryRepository;
-    private final StatService statService;
-    private final String serviceName = "ewm-main-service";
+    private final StatClient statClient;
 
     @Override
     @Transactional
@@ -68,7 +69,7 @@ public class PrivateServiceImpl implements PrivateService {
             return Collections.emptyList();
         }
         for (Event event : events) {
-            statService.saveEndpointHit(request, serviceName);
+            saveEndpointHit(request);
             event.setViews(event.getViews() + 1);
         }
         return events.stream().map(EventMapper::toEventShortDto).collect(toList());
@@ -81,7 +82,7 @@ public class PrivateServiceImpl implements PrivateService {
                 .orElseThrow(() -> new ObjectNotFoundException("User not found"));
         Event event = eventRepository.findByIdAndInitiatorId(eventId, userId)
                 .orElseThrow(() -> new ObjectNotFoundException("Event not found"));
-        statService.saveEndpointHit(request, serviceName);
+        saveEndpointHit(request);
         event.setViews(event.getViews() + 1);
         return EventMapper.toEventFullDto(event);
     }
@@ -173,7 +174,7 @@ public class PrivateServiceImpl implements PrivateService {
         }
         if (event.getRequestModeration().equals(true) || event.getParticipantLimit() > 0) {
             if (!event.getInitiator().getId().equals(userId)) {
-                throw new OperationIsNotSupported("Вы не инициатор события");
+                throw new OperationIsNotSupportedException("Вы не инициатор события");
             }
         }
         EventRequestStatusUpdateResult updatedRequests = new EventRequestStatusUpdateResult();
@@ -220,13 +221,13 @@ public class PrivateServiceImpl implements PrivateService {
             throw new ObjectAlreadyExistsException("Request already exist");
         }
         if (userId.equals(event.getInitiator().getId())) {
-            throw new OperationIsNotSupported("Initiator can't be a requester");
+            throw new OperationIsNotSupportedException("Initiator can't be a requester");
         }
         if (!event.getState().equals(PUBLISHED)) {
-            throw new OperationIsNotSupported("Event is not published");
+            throw new OperationIsNotSupportedException("Event is not published");
         }
         if (event.getParticipantLimit() == event.getConfirmedRequests()) {
-            throw new OperationIsNotSupported("Limit is reached");
+            throw new OperationIsNotSupportedException("Limit is reached");
         }
         Request request = new Request(event, user, Status.PENDING);
         if (event.getRequestModeration().equals(false)) {
@@ -252,5 +253,16 @@ public class PrivateServiceImpl implements PrivateService {
         if (eventDate != null && eventDate.isBefore(LocalDateTime.now().plusHours(2))) {
             throw new DataIsNotCorrectException("Время должно быть больше на 2 часа чем сейчас");
         }
+    }
+
+    @Transactional
+    private void saveEndpointHit(HttpServletRequest request) {
+        EndpointHitDto endpointHit = EndpointHitDto.builder()
+                .app("ewm-main-service")
+                .uri(request.getRequestURI())
+                .ip(request.getRemoteAddr())
+                .timestamp(LocalDateTime.now())
+                .build();
+        statClient.create(endpointHit);
     }
 }
