@@ -1,6 +1,8 @@
 package ru.practicum.ewm.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,45 +27,45 @@ public class PublicController {
     public final PublicService service;
 
     @GetMapping("/categories")
-    public List<CategoryDto> getAllCategories(@RequestParam(defaultValue = "0") int from,
+    public ResponseEntity<List<CategoryDto>> getAllCategories(@RequestParam(defaultValue = "0") int from,
                                               @RequestParam(defaultValue = "10") int size) {
-        return service.getAllCategories(from, size);
+        return new ResponseEntity<>(service.getAllCategories(from, size), HttpStatus.OK);
     }
 
     @GetMapping("/categories/{catId}")
-    public CategoryDto getCategory(@PathVariable Long catId) {
-        return service.getCategory(catId);
+    public ResponseEntity<CategoryDto> getCategory(@PathVariable Long catId) {
+        return new ResponseEntity<>(service.getCategory(catId), HttpStatus.OK);
     }
 
     @GetMapping("/events")
-    public List<EventShortDto> getAllEvents(@RequestParam(required = false) String text,
-                                           @RequestParam(required = false) List<Long> categories,
-                                           @RequestParam(required = false) Boolean paid,
-                                           @RequestParam(required = false) LocalDateTime rangeStart,
-                                           @RequestParam(required = false) LocalDateTime rangeEnd,
-                                           @RequestParam(defaultValue = "false") Boolean onlyAvailable,
-                                           @RequestParam(defaultValue = "EVENT_DATE") String sort,
-                                           @RequestParam(defaultValue = "0") @PositiveOrZero int from,
-                                           @RequestParam(defaultValue = "10") @Positive int size,
-                                           HttpServletRequest request) {
-        return service.getAllEvents(text, categories, paid, rangeStart, rangeEnd, onlyAvailable,
-                sort, from, size, request);
+    public ResponseEntity<List<EventShortDto>> getAllEvents(@RequestParam(required = false) String text,
+                                                            @RequestParam(required = false) List<Long> categories,
+                                                            @RequestParam(required = false) Boolean paid,
+                                                            @RequestParam(required = false) LocalDateTime rangeStart,
+                                                            @RequestParam(required = false) LocalDateTime rangeEnd,
+                                                            @RequestParam(defaultValue = "false") Boolean onlyAvailable,
+                                                            @RequestParam(defaultValue = "EVENT_DATE") String sort,
+                                                            @RequestParam(defaultValue = "0") @PositiveOrZero int from,
+                                                            @RequestParam(defaultValue = "10") @Positive int size,
+                                                            HttpServletRequest request) {
+        return new ResponseEntity<>(service.getAllEvents(text, categories, paid, rangeStart, rangeEnd, onlyAvailable,
+                sort, from, size, request), HttpStatus.OK);
     }
 
     @GetMapping("/events/{id}")
-    public EventFullDto getEvent(@PathVariable Long id, HttpServletRequest request) {
-        return service.getEvent(id, request);
+    public ResponseEntity<EventFullDto> getEvent(@PathVariable Long id, HttpServletRequest request) {
+        return new ResponseEntity<>(service.getEvent(id, request), HttpStatus.OK);
     }
 
     @GetMapping("/compilations")
-    public List<CompilationDto> getAllCompilations(@RequestParam(required = false) Boolean pinned,
+    public ResponseEntity<List<CompilationDto>> getAllCompilations(@RequestParam(required = false) Boolean pinned,
                                                    @RequestParam(defaultValue = "0") int from,
                                                    @RequestParam(defaultValue = "10") int size) {
-        return service.getAllCompilations(pinned, from, size);
+        return new ResponseEntity<>(service.getAllCompilations(pinned, from, size), HttpStatus.OK);
     }
 
     @GetMapping("/compilations/{comId}")
-    public CompilationDto getCompilation(@PathVariable Long comId) {
-        return service.getCompilation(comId);
+    public ResponseEntity<CompilationDto> getCompilation(@PathVariable Long comId) {
+        return new ResponseEntity<>(service.getCompilation(comId), HttpStatus.OK);
     }
 }
