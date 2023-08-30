@@ -9,10 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.dto.*;
 import ru.practicum.ewm.entity.*;
 import ru.practicum.ewm.enums.State;
-import ru.practicum.ewm.exception.ObjectAlreadyExistsException;
-import ru.practicum.ewm.exception.ObjectNotFoundException;
-import ru.practicum.ewm.exception.OperationIsNotSupported;
-import ru.practicum.ewm.exception.ValidationException;
+import ru.practicum.ewm.enums.Status;
+import ru.practicum.ewm.exception.*;
 import ru.practicum.ewm.mapper.EventMapper;
 import ru.practicum.ewm.mapper.RequestMapper;
 import ru.practicum.ewm.repository.CategoryRepository;
@@ -20,14 +18,13 @@ import ru.practicum.ewm.repository.EventRepository;
 import ru.practicum.ewm.repository.RequestRepository;
 import ru.practicum.ewm.repository.UserRepository;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toSet;
 import static ru.practicum.ewm.enums.State.*;
-import static ru.practicum.ewm.enums.State.PENDING;
 import static ru.practicum.ewm.enums.StateActionForUser.*;
 import static ru.practicum.ewm.enums.Status.*;
 import static ru.practicum.ewm.enums.Status.CANCELED;
@@ -40,34 +37,14 @@ public class PrivateServiceImpl implements PrivateService {
     private final UserRepository userRepository;
     private final RequestRepository requestRepository;
     private final CategoryRepository categoryRepository;
-
-    @Override
-    public Set<EventShortDto> getAllEvents(Long userId, Integer from, Integer size) {
-        Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size,
-                Sort.by("id").ascending());
-        Set<Event> events = eventRepository.findAll(pageable).toSet();
-        return events.stream().map(EventMapper::toEventShortDto).collect(toSet());
-    }
-
-    @Override
-    public EventFullDto getEvent(Long userId, Long eventId) {
-        Event event = eventRepository.findByIdAndInitiatorId(eventId, userId)
-                .orElseThrow(() -> new ObjectNotFoundException("Event not found"));
-        return EventMapper.toEventFullDto(event);
-    }
-
-    @Override
-    public List<ParticipationRequestDto> getRequestsByEvent(Long userId, Long eventId) {
-        if (!eventRepository.existsByIdAndInitiatorId(eventId, userId)) {
-            throw new ObjectNotFoundException("Event not found");
-        }
-        List<Request> requests = requestRepository.findAllByEventId(eventId);
-        return requests.stream().map(RequestMapper::toParticipationRequestDto).collect(toList());
-    }
+    private final StatService statService;
+    private final String serviceName = "ewm-main-service";
 
     @Override
     @Transactional
     public EventFullDto createEvent(Long userId, NewEventDto eventDto) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new ObjectNotFoundException("User not found"));
         dateValidate(eventDto.getEventDate());
         Event event = EventMapper.toEvent(eventDto);
         event.setCategory(categoryRepository.findById(eventDto.getCategoryId())
@@ -81,11 +58,57 @@ public class PrivateServiceImpl implements PrivateService {
 
     @Override
     @Transactional
-    public EventFullDto updateEvent(Long userId, Long eventId, UpdateEventUserRequest eventDto) {
+    public List<EventShortDto> getEventsByUser(Long userId, Integer from, Integer size, HttpServletRequest request) {
+        Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size,
+                Sort.by("id").ascending());
+        userRepository.findById(userId)
+                .orElseThrow(() -> new ObjectNotFoundException("User not found"));
+        List<Event> events = eventRepository.findAllByInitiator_Id(userId, pageable);
+        if (events.isEmpty()) {
+            return Collections.emptyList();
+        }
+        for (Event event : events) {
+            statService.saveEndpointHit(request, serviceName);
+            event.setViews(event.getViews() + 1);
+        }
+        return events.stream().map(EventMapper::toEventShortDto).collect(toList());
+
+    }
+
+    @Override
+    public EventFullDto getEventById(Long userId, Long eventId, HttpServletRequest request) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new ObjectNotFoundException("User not found"));
         Event event = eventRepository.findByIdAndInitiatorId(eventId, userId)
-                .orElseThrow(() -> new ObjectNotFoundException("Event not found "));
+                .orElseThrow(() -> new ObjectNotFoundException("Event not found"));
+        statService.saveEndpointHit(request, serviceName);
+        event.setViews(event.getViews() + 1);
+        return EventMapper.toEventFullDto(event);
+    }
+
+    @Override
+    public List<ParticipationRequestDto> getRequestsByEvent(Long userId, Long eventId) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new ObjectNotFoundException("User not found"));
+        if (!eventRepository.existsByIdAndInitiatorId(eventId, userId)) {
+            throw new ObjectNotFoundException("Event not found");
+        }
+        List<Request> requests = requestRepository.findAllByEventId(eventId);
+        if (requests.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return requests.stream().map(RequestMapper::toParticipationRequestDto).collect(toList());
+    }
+
+    @Override
+    @Transactional
+    public EventFullDto updateEvent(Long userId, Long eventId, UpdateEventUserRequest eventDto) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new ObjectNotFoundException("User not found"));
+        Event event = eventRepository.findByIdAndInitiatorId(eventId, userId)
+                .orElseThrow(() -> new ObjectNotFoundException("Event not found"));
         if (event.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
-            throw new OperationIsNotSupported("Поздняк метаться");
+            throw new DataIsNotCorrectException("Поздняк метаться");
         }
         if (eventDto.getAnnotation() != null && !eventDto.getTitle().isBlank()) {
             event.setAnnotation(eventDto.getAnnotation());
@@ -100,7 +123,7 @@ public class PrivateServiceImpl implements PrivateService {
         if (eventDto.getEventDate() != null) {
             event.setEventDate(eventDto.getEventDate());
             if (eventDto.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
-                throw new OperationIsNotSupported("Поздняк метаться");
+                throw new DataIsNotCorrectException("Поздняк метаться");
             } else {
                 event.setEventDate(eventDto.getEventDate());
             }
@@ -118,8 +141,8 @@ public class PrivateServiceImpl implements PrivateService {
             event.setRequestModeration(eventDto.getRequestModeration());
         }
         if (eventDto.getStateAction() != null) {
-            if (!event.getState().equals(PENDING)) {
-                throw new OperationIsNotSupported("Можно изменять события только в статусе 'Pending'");
+            if (event.getState().equals(PUBLISHED)) {
+                throw new DataIsNotCorrectException("Нельзя менять опубликованные события");
             }
             if (eventDto.getStateAction().equals(SEND_TO_REVIEW)) {
                 event.setState(PUBLISHED);
@@ -140,73 +163,85 @@ public class PrivateServiceImpl implements PrivateService {
     @Transactional
     public EventRequestStatusUpdateResult updateRequestStatus(Long userId,
                                                               Long eventId,
-                                                              EventRequestStatusUpdateRequest statusUpdateRequest) {
-        if (!userRepository.existsById(userId)) {
-            throw new ObjectAlreadyExistsException("Пользователя с id " + userId + " не существует");
-        }
+                                                              EventRequestStatusUpdateRequest statusUpdateRequests) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new ObjectNotFoundException("User not found"));
         Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new ObjectAlreadyExistsException("События с id " + eventId + " не существует"));
-        if (!event.getInitiator().getId().equals(userId)) {
-            throw new OperationIsNotSupported("Вы не инициатор события");
+                .orElseThrow(() -> new ObjectNotFoundException("Event not found"));
+        if (event.getParticipantLimit() != 0 && event.getConfirmedRequests() == event.getParticipantLimit()) {
+            throw new DataIsNotCorrectException("Лимит заявок на участие исчерпан");
         }
-        if (event.getParticipantLimit() != 0 && event.getConfirmedRequests() >= event.getParticipantLimit()) {
-            throw new OperationIsNotSupported("Нет свободный заявок на участие");
+        if (event.getRequestModeration().equals(true) || event.getParticipantLimit() > 0) {
+            if (!event.getInitiator().getId().equals(userId)) {
+                throw new OperationIsNotSupported("Вы не инициатор события");
+            }
         }
-        EventRequestStatusUpdateResult updatedRequest = new EventRequestStatusUpdateResult();
-        statusUpdateRequest.getRequestIds().forEach(requestId -> {
+        EventRequestStatusUpdateResult updatedRequests = new EventRequestStatusUpdateResult();
+        statusUpdateRequests.getRequestIds().forEach(requestId -> {
             Request request = requestRepository.findById(requestId)
                     .orElseThrow(() -> new ObjectNotFoundException("Данного запроса не найденно"));
-            if (statusUpdateRequest.getStatus().equals(CONFIRMED)) {
-                request.setStatus(CONFIRMED);
-                updatedRequest.getConfirmedRequests().add(RequestMapper.toParticipationRequestDto(request));
-            }
-            if ((statusUpdateRequest.getStatus().equals(REJECTED))) {
+            if (event.getParticipantLimit() != 0 && event.getConfirmedRequests() == event.getParticipantLimit()) {
                 request.setStatus(REJECTED);
-                updatedRequest.getRejectedRequests().add(RequestMapper.toParticipationRequestDto(request));
+            }
+            if (request.getStatus().equals(Status.PENDING)) {
+                if (statusUpdateRequests.getStatus().equals(CONFIRMED)) {
+                    request.setStatus(CONFIRMED);
+                    event.setConfirmedRequests(event.getConfirmedRequests() + 1);
+                    updatedRequests.getConfirmedRequests().add(RequestMapper.toParticipationRequestDto(request));
+                }
+                if ((statusUpdateRequests.getStatus().equals(REJECTED))) {
+                    request.setStatus(REJECTED);
+                    updatedRequests.getRejectedRequests().add(RequestMapper.toParticipationRequestDto(request));
+                }
             }
         });
-        return updatedRequest;
+        return updatedRequests;
     }
 
     @Override
     public List<ParticipationRequestDto> getRequestsByUser(Long userId) {
-        if (userRepository.existsById(userId)) {
-            List<Request> requests = requestRepository.findAllByRequesterId(userId);
-            return requests.stream().map(RequestMapper::toParticipationRequestDto).collect(toList());
-        } else {
-            throw new ObjectNotFoundException("User not found");
+        userRepository.findById(userId)
+                .orElseThrow(() -> new ObjectNotFoundException("User not found"));
+        List<Request> requests = requestRepository.findAllByRequesterId(userId);
+        if (requests.isEmpty()) {
+            return Collections.emptyList();
         }
+        return requests.stream().map(RequestMapper::toParticipationRequestDto).collect(toList());
     }
 
     @Override
     @Transactional
     public ParticipationRequestDto createRequest(Long userId, Long eventId) {
-        Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new ObjectNotFoundException("Event not found "));
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ObjectNotFoundException("User not found"));
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new ObjectNotFoundException("Event not found "));
         if (requestRepository.existsByRequesterIdAndEventId(userId, eventId)) {
-            throw new ObjectAlreadyExistsException(String.format("Request with requesterId=%d and eventId=%d already exist", userId, eventId));
+            throw new ObjectAlreadyExistsException("Request already exist");
         }
         if (userId.equals(event.getInitiator().getId())) {
             throw new OperationIsNotSupported("Initiator can't be a requester");
         }
-        if (!event.getState().equals(State.PUBLISHED)) {
+        if (!event.getState().equals(PUBLISHED)) {
             throw new OperationIsNotSupported("Event is not published");
         }
         if (event.getParticipantLimit() == event.getConfirmedRequests()) {
             throw new OperationIsNotSupported("Limit is reached");
         }
-        if (!event.getRequestModeration()) {
+        Request request = new Request(event, user, Status.PENDING);
+        if (event.getRequestModeration().equals(false)) {
+            request.setStatus(Status.CONFIRMED);
             event.setConfirmedRequests(event.getConfirmedRequests() + 1);
             eventRepository.save(event);
         }
-        return RequestMapper.toParticipationRequestDto(requestRepository.save(RequestMapper.toRequest(event, user)));
+        return RequestMapper.toParticipationRequestDto(requestRepository.save(request));
     }
 
     @Override
     @Transactional
     public ParticipationRequestDto canselRequest(Long userId, Long requestId) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new ObjectNotFoundException("User not found"));
         Request request = requestRepository.findByIdAndRequesterId(requestId, userId)
                 .orElseThrow(() -> new ObjectNotFoundException("Request not found"));
         request.setStatus(CANCELED);
@@ -215,7 +250,7 @@ public class PrivateServiceImpl implements PrivateService {
 
     private void dateValidate(LocalDateTime eventDate) {
         if (eventDate != null && eventDate.isBefore(LocalDateTime.now().plusHours(2))) {
-            throw new ValidationException("Время должно быть больше на 2 часа чем сейчас");
+            throw new DataIsNotCorrectException("Время должно быть больше на 2 часа чем сейчас");
         }
     }
 }

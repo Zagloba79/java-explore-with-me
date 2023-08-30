@@ -1,6 +1,5 @@
 package ru.practicum;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;
@@ -13,15 +12,13 @@ import java.util.Map;
 
 @Service
 public class StatClient extends BaseClient {
+    @Value("${client.url}")
+    String serverUrl;
 
-    @Autowired
-    public StatClient(@Value("${client.url}") String serverUrl, RestTemplateBuilder builder) {
-        super(
-                builder
-                        .uriTemplateHandler(new DefaultUriBuilderFactory(serverUrl))
-                        .requestFactory(HttpComponentsClientHttpRequestFactory::new)
-                        .build()
-        );
+    public StatClient() {
+        super.rest = new RestTemplateBuilder().uriTemplateHandler(new DefaultUriBuilderFactory(serverUrl))
+                .requestFactory(HttpComponentsClientHttpRequestFactory::new)
+                .build();
     }
 
     public ResponseEntity<Object> create(EndpointHitDto endpointHit) {

@@ -1,7 +1,6 @@
 package ru.practicum.ewm.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -11,10 +10,7 @@ import ru.practicum.ewm.dto.*;
 import ru.practicum.ewm.entity.*;
 import ru.practicum.ewm.enums.State;
 import ru.practicum.ewm.enums.StateActionForAdmin;
-import ru.practicum.ewm.exception.ObjectAlreadyExistsException;
-import ru.practicum.ewm.exception.ObjectNotFoundException;
-import ru.practicum.ewm.exception.OperationIsNotSupported;
-import ru.practicum.ewm.exception.ValidationException;
+import ru.practicum.ewm.exception.*;
 import ru.practicum.ewm.mapper.CategoryMapper;
 import ru.practicum.ewm.mapper.CompilationMapper;
 import ru.practicum.ewm.mapper.EventMapper;
@@ -56,15 +52,18 @@ public class AdminServiceImpl implements AdminService {
         } else {
             users = userRepository.findAllByIdIn(ids, pageable);
         }
+        if (users.isEmpty()) {
+            return Collections.emptyList();
+        }
         return users.stream().map(UserMapper::toUserDto).collect(toList());
     }
 
     @Override
     @Transactional
     public void deleteUser(Long userId) {
-        if (userRepository.existsById(userId)) {
-            userRepository.deleteById(userId);
-        }
+        userRepository.findById(userId)
+                .orElseThrow(() -> new ObjectNotFoundException("User not found"));
+        userRepository.deleteById(userId);
     }
 
     @Override
@@ -81,32 +80,29 @@ public class AdminServiceImpl implements AdminService {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new ObjectNotFoundException("Нет данной категории"));
         category.setName(categoryDto.getName());
+        categoryValidate(category);
         return CategoryMapper.toCategoryDto(category);
     }
 
     @Override
     @Transactional
     public void deleteCategory(long categoryId) {
+        categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new ObjectNotFoundException("Category not found"));
         if (eventRepository.existsByCategoryId(categoryId)) {
-            throw new OperationIsNotSupported("STOP! Категории с событиями не удаляем.");
+            throw new ObjectContainsDataException("STOP! Категории с событиями не удаляем.");
         }
-        boolean isExist = categoryRepository.existsById(categoryId);
-        if (isExist) {
-            categoryRepository.deleteById(categoryId);
-        } else {
-            throw new ObjectNotFoundException("Нет данной категории");
-        }
+        categoryRepository.deleteById(categoryId);
     }
 
     @Override
     public CompilationDto createCompilation(NewCompilationDto newCompilationDto) {
+        Compilation compilation = CompilationMapper.toCompilation(newCompilationDto);
         Set<Event> events = findEvents(newCompilationDto.getEvents());
-        Compilation compilation = CompilationMapper.toCompilation(newCompilationDto, events);
-        try {
-            compilation = compilationRepository.save(compilation);
-        } catch (DataIntegrityViolationException exception) {
-            throw new OperationIsNotSupported(exception.getMessage(), exception);
+        if (!events.isEmpty()) {
+            compilation.setEvents(events);
         }
+        compilation = compilationRepository.save(compilation);
         return CompilationMapper.toCompilationDto(compilation);
     }
 
@@ -118,20 +114,13 @@ public class AdminServiceImpl implements AdminService {
         if (updateCompilationRequest.getPinned() != null) {
             compilation.setPinned(updateCompilationRequest.getPinned());
         }
-
         if (!updateCompilationRequest.getTitle().isBlank()) {
             compilation.setTitle(updateCompilationRequest.getTitle());
         }
-
         if (updateCompilationRequest.getEvents() != null) {
             compilation.setEvents(findEvents(updateCompilationRequest.getEvents()));
         }
-        try {
-            compilation = compilationRepository.save(compilation);
-        } catch (DataIntegrityViolationException exception) {
-            throw new OperationIsNotSupported(exception.getMessage(), exception);
-        }
-        return CompilationMapper.toCompilationDto(compilation);
+        return CompilationMapper.toCompilationDto(compilationRepository.save(compilation));
     }
 
     @Override
@@ -149,7 +138,7 @@ public class AdminServiceImpl implements AdminService {
     public EventFullDto updateEvent(long eventId, UpdateEventAdminRequest eventDto) {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ObjectNotFoundException("Event not found"));
-        if (event.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
+        if (event.getEventDate().isBefore(LocalDateTime.now().plusHours(1))) {
             throw new OperationIsNotSupported("Поздняк метаться");
         }
         if (eventDto.getAnnotation() != null && !eventDto.getTitle().isBlank()) {
@@ -163,7 +152,7 @@ public class AdminServiceImpl implements AdminService {
             event.setDescription(eventDto.getDescription());
         }
         if (eventDto.getEventDate() != null) {
-            if (eventDto.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
+            if (eventDto.getEventDate().isBefore(LocalDateTime.now().plusHours(1))) {
                 throw new OperationIsNotSupported("Поздняк метаться");
             } else {
                 event.setEventDate(eventDto.getEventDate());
@@ -201,9 +190,12 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public List<EventFullDto> getAllEvents(List<Long> users, List<State> states, List<Long> categories,
-                                    LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size) {
+                                           LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size) {
         Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size, Sort.by("id").ascending());
         List<Event> events = eventRepository.findEventsByParamsForAdmin(users, states, categories, rangeStart, rangeEnd, pageable);
+        if (events.isEmpty()) {
+            return Collections.emptyList();
+        }
         return events.stream()
                 .map(EventMapper::toEventFullDto)
                 .collect(toList());
@@ -226,18 +218,13 @@ public class AdminServiceImpl implements AdminService {
     }
 
     private void categoryValidate(Category category) {
-        for (Category cat : categoryRepository.findAll()) {
-            if (!cat.getName().equals(category.getName())) {
+        if (category.getName().isBlank()) {
+            throw new ValidationException("Название категории некорректно");
+        }
+        for (Category categoryFromRep : categoryRepository.findAll()) {
+            if (!categoryFromRep.getName().equals(category.getName())) {
                 throw new ObjectAlreadyExistsException("The category already exists");
             }
         }
-    }
-
-    private Optional<Location> getLocation(Location location) {
-        return locationRepository.findByLocation_LatAndLon(location.getLat(), location.getLon());
-    }
-
-    private Location saveLocation(Location location) {
-        return locationRepository.save(location);
     }
 }

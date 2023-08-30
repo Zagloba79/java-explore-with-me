@@ -1,7 +1,6 @@
 package ru.practicum.ewm.service;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -10,7 +9,6 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.dto.*;
 import ru.practicum.ewm.entity.*;
 import ru.practicum.ewm.exception.ObjectNotFoundException;
-import ru.practicum.ewm.exception.OperationIsNotSupported;
 import ru.practicum.ewm.mapper.CategoryMapper;
 import ru.practicum.ewm.mapper.EventMapper;
 import ru.practicum.ewm.mapper.CompilationMapper;
@@ -33,14 +31,16 @@ public class PublicServiceImpl implements PublicService {
     private final EventRepository eventRepository;
     private final CompilationRepository compilationRepository;
     private final StatService statService;
-    @Value("${ewm.service.name}")
-    private String serviceName;
+    private final String serviceName = "ewm-main-service";
 
     @Override
     public List<CategoryDto> getAllCategories(int from, int size) {
         Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size,
                 Sort.by("id").ascending());
         List<Category> categories = categoriesRepository.findAll(pageable).toList();
+        if (categories.isEmpty()) {
+            return Collections.emptyList();
+        }
         return categories.stream().map(CategoryMapper::toCategoryDto).collect(toList());
     }
 
@@ -53,27 +53,32 @@ public class PublicServiceImpl implements PublicService {
 
     @Override
     public List<EventShortDto> getAllEvents(String text, List<Long> categories, Boolean paid,
-                                           LocalDateTime rangeStart, LocalDateTime rangeEnd,
-                                           Boolean onlyAvailable, String sort, int from, int size,
-                                           HttpServletRequest request) {
-        List<Event> events = eventRepository.findEventsByParamsForEverybody(text, categories, paid, rangeStart,
-                rangeEnd, onlyAvailable);
-        Map<Long, Long> view = statService.toView(events);
-        Map<Long, Long> confirmedRequest = statService.toEventConfirmedRequests(events);
-        List<EventShortDto> eventShorts = new ArrayList<>();
-        for (Event event : events) {
-            eventShorts.add(EventMapper.toEventShortDto(event,
-                    view.getOrDefault(event.getId(), 0L),
-                    confirmedRequest.getOrDefault(event.getId(), 0L)));
-        }
-        if (sort != null) {
-            if (sort.equals("EVENT_DATE")) {
-                eventShorts = eventShorts.stream().sorted(Comparator.comparing(EventShortDto::getEventDate)).collect(toList());
-            } else if (sort.equals("VIEWS")) {
-                eventShorts = eventShorts.stream().sorted(Comparator.comparing(EventShortDto::getViews)).collect(toList());
+                                            LocalDateTime rangeStart, LocalDateTime rangeEnd,
+                                            Boolean onlyAvailable, String sort, int from, int size,
+                                            HttpServletRequest request) {
+        if (rangeStart == null) {
+            rangeStart = LocalDateTime.now();
+            if (rangeEnd == null) {
+                rangeEnd = LocalDateTime.now().plusYears(100);
+            } else if (rangeStart.isAfter(rangeEnd)) {
+                rangeEnd = LocalDateTime.now().plusYears(100);
             }
         }
-        statService.saveEndpointHit(request, serviceName);
+        List<Event> events = eventRepository.findEventsByParamsForEverybody(text, categories, paid, rangeStart,
+                rangeEnd, onlyAvailable);
+        if (sort != null) {
+            if (sort.equals("EVENT_DATE")) {
+                events = events.stream().sorted(Comparator.comparing(Event::getEventDate)).collect(toList());
+            } else if (sort.equals("VIEWS")) {
+                events = events.stream().sorted(Comparator.comparing(Event::getViews)).collect(toList());
+            }
+        }
+        List<EventShortDto> eventShorts = new ArrayList<>();
+        for (Event event : events) {
+            statService.saveEndpointHit(request, serviceName);
+            event.setViews(event.getViews() + 1);
+            eventShorts.add(EventMapper.toEventShortDto(event));
+        }
         return eventShorts;
     }
 
@@ -82,11 +87,11 @@ public class PublicServiceImpl implements PublicService {
         Event event = eventRepository.findById(id)
                 .orElseThrow(() -> new ObjectNotFoundException("Event not found"));
         if (!event.getState().equals(PUBLISHED)) {
-            throw new OperationIsNotSupported("Event is not published");
+            throw new ObjectNotFoundException("Event is not published");
         }
         statService.saveEndpointHit(request, serviceName);
         event.setViews(event.getViews() + 1);
-        eventRepository.flush();
+        eventRepository.save(event);
         return EventMapper.toEventFullDto(event);
     }
 
@@ -100,26 +105,16 @@ public class PublicServiceImpl implements PublicService {
         } else {
             compilations = compilationRepository.findAll(pageable).toList();
         }
+        if (compilations.isEmpty()) {
+            return Collections.emptyList();
+        }
         return compilations.stream().map(CompilationMapper::toCompilationDto).collect(toList());
     }
 
     @Override
     public CompilationDto getCompilation(Long comId) {
-        final Compilation compilation = compilationRepository.findById(comId)
+        Compilation compilation = compilationRepository.findById(comId)
                 .orElseThrow(() -> new ObjectNotFoundException("Compilation not found"));
         return CompilationMapper.toCompilationDto(compilation);
-    }
-
-
-    private EventPageRequest createPageable(String sort, int from, int size) {
-        EventPageRequest pageable = null;
-        if (sort == null || sort.equalsIgnoreCase("EVENT_DATE")) {
-            pageable = new EventPageRequest(from, size,
-                    Sort.by(Sort.Direction.ASC, "event_date"));
-        } else if (sort.equalsIgnoreCase("VIEWS")) {
-            pageable = new EventPageRequest(from, size,
-                    Sort.by(Sort.Direction.ASC, "views"));
-        }
-        return pageable;
     }
 }

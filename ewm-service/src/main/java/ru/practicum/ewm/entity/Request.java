@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor
 @Entity
-@Table(name = "events")
+@Table(name = "requests")
 @AllArgsConstructor
 @Builder
 public class Request {
@@ -22,8 +22,15 @@ public class Request {
     @ManyToOne
     @JoinColumn(name = "event_id")
     private Event event;
+    @OneToOne
     @JoinColumn(name = "requester_id")
     private User requester;
     @Enumerated(EnumType.STRING)
     private Status status;
+
+    public Request(Event event, User requester, Status status) {
+        this.event = event;
+        this.requester = requester;
+        this.status = status;
+    }
 }

@@ -9,11 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 public class BaseClient {
-    protected final RestTemplate rest;
-
-    public BaseClient(RestTemplate rest) {
-        this.rest = rest;
-    }
+    protected RestTemplate rest;
 
     protected ResponseEntity<Object> get(String path) {
         return get(path, null);
@@ -66,17 +62,17 @@ public class BaseClient {
                                                           @Nullable T body) {
         HttpEntity<T> requestEntity = new HttpEntity<>(body, defaultHeaders());
 
-        ResponseEntity<Object> shareitServerResponse;
+        ResponseEntity<Object> response;
         try {
             if (parameters != null) {
-                shareitServerResponse = rest.exchange(path, method, requestEntity, Object.class, parameters);
+                response = rest.exchange(path, method, requestEntity, Object.class, parameters);
             } else {
-                shareitServerResponse = rest.exchange(path, method, requestEntity, Object.class);
+                response = rest.exchange(path, method, requestEntity, Object.class);
             }
         } catch (HttpStatusCodeException e) {
             return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsByteArray());
         }
-        return prepareGatewayResponse(shareitServerResponse);
+        return prepareGatewayResponse(response);
     }
 
     private HttpHeaders defaultHeaders() {

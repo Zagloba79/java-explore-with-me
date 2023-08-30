@@ -1,14 +1,15 @@
 package ru.practicum.ewm.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.dto.*;
 import ru.practicum.ewm.service.PrivateService;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.List;
-import java.util.Set;
 
 @Controller
 @RequiredArgsConstructor
@@ -17,15 +18,16 @@ public class PrivateController {
     public final PrivateService service;
 
     @GetMapping("/events")
-    public Set<EventShortDto> getAllEvents(@PathVariable Long userId,
-                                           @RequestParam(defaultValue = "0") Integer from,
-                                           @RequestParam(defaultValue = "10") Integer size) {
-        return service.getAllEvents(userId, from, size);
+    public List<EventShortDto> getEventsByUser(@PathVariable Long userId,
+                                               @RequestParam(defaultValue = "0") Integer from,
+                                               @RequestParam(defaultValue = "10") Integer size,
+                                               HttpServletRequest request) {
+        return service.getEventsByUser(userId, from, size, request);
     }
 
     @GetMapping("/events/{eventId}")
-    public EventFullDto getEvent(@PathVariable Long userId, @PathVariable Long eventId) {
-        return service.getEvent(userId, eventId);
+    public EventFullDto getEvent(@PathVariable Long userId, @PathVariable Long eventId, HttpServletRequest request) {
+        return service.getEventById(userId, eventId, request);
     }
 
     @GetMapping("/events/{eventId}/requests")
@@ -34,6 +36,7 @@ public class PrivateController {
     }
 
     @PostMapping("/events")
+    @ResponseStatus(HttpStatus.CREATED)
     public EventFullDto createEvent(@PathVariable Long userId, @RequestBody @Valid NewEventDto eventDto) {
         return service.createEvent(userId, eventDto);
     }
@@ -56,11 +59,13 @@ public class PrivateController {
     }
 
     @PostMapping("/requests")
+    @ResponseStatus(HttpStatus.CREATED)
     public ParticipationRequestDto createRequest(@PathVariable Long userId, @RequestParam Long eventId) {
         return service.createRequest(userId, eventId);
     }
 
     @PatchMapping("/requests/{requestsId}/cancel")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public ParticipationRequestDto canselRequest(@PathVariable Long userId, @PathVariable Long requestsId) {
         return service.canselRequest(userId, requestsId);
     }
