@@ -22,15 +22,6 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 
     Set<Event> findAllByIdIn(List<Long> eventIds);
 
-//    @Query("SELECT e.* " +
-//            "FROM event AS e " +
-//            "WHERE (e.initiator_id IN ?1 OR ?1 IS null) " +
-//            "AND (e.state IN ?2 OR ?2 IS null) " +
-//            "AND (e.category_id IN ?3 OR ?3 IS null) " +
-//            "AND (e.event_date > ?4 OR ?4 IS null) " +
-//            "AND (e.event_date < ?5 OR ?5 IS null) ")
-//    List<Event> findAllByParam(List<Long> users, List<State> states, List<Long> categories,
-//                               LocalDateTime start, LocalDateTime end, Pageable pageable);
     @Query("SELECT event " +
             "FROM Event AS event " +
             "WHERE (event.initiator.id IN ?1 OR ?1 IS null) " +
@@ -41,22 +32,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
     List<Event> findAllByParam(List<Long> users, List<State> states, List<Long> categories,
                                LocalDateTime start, LocalDateTime end, Pageable pageable);
 
-
     Optional<Event> findByIdAndInitiatorId(Long eventId, Long userId);
-
-//    @Query("SELECT e.* " +
-//            "FROM events AS e " +
-//            "WHERE ((?1 is null) OR ((lower(e.annotation) LIKE CONCAT('%', lower(?1), '%')) OR " +
-//            "(lower(e.description) LIKE CONCAT('%', lower(?1), '%')))) " +
-//            "AND (e.category.id IN ?2 OR ?2 IS null) " +
-//            "AND (e.paid = ?3 OR ?3 IS null) " +
-//            "AND (e.event_date > ?4 OR ?4 IS null) AND (event.event_date < ?5 OR ?5 IS null) " +
-//            "AND (?6 = false OR ((?6 = true and e.participant_limit > " +
-//            "(SELECT count(*) FROM requests AS r WHERE e.id = r.event_id))) " +
-//            "OR (e.participant_limit > 0 )) " +
-//            "AND e.state = 'PUBLISHED'")
-//    List<Event> getAllByParam(String text, List<Long> categories, Boolean paid, LocalDateTime rangeStart,
-//                              LocalDateTime rangeEnd, Boolean onlyAvailable);
 
     @Query("SELECT event " +
             "FROM Event AS event " +

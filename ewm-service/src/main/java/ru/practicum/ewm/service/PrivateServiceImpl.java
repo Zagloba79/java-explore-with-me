@@ -25,12 +25,14 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
 import static ru.practicum.ewm.enums.State.*;
 import static ru.practicum.ewm.enums.StateActionForUser.*;
-import static ru.practicum.ewm.enums.Status.*;
+import static ru.practicum.ewm.enums.Status.REJECTED;
 import static ru.practicum.ewm.enums.Status.CANCELED;
+import static ru.practicum.ewm.enums.Status.CONFIRMED;
 
 @Service
 @RequiredArgsConstructor
@@ -81,7 +83,7 @@ public class PrivateServiceImpl implements PrivateService {
     public EventFullDto getEventById(Long userId, Long eventId, HttpServletRequest request) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new ObjectNotFoundException("User not found"));
-        Event event = eventRepository.findByIdAndInitiatorId(eventId, userId)
+        Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ObjectNotFoundException("Event not found"));
         saveEndpointHit(request);
         event.setViews(event.getViews() + 1);
@@ -95,7 +97,7 @@ public class PrivateServiceImpl implements PrivateService {
         if (!eventRepository.existsByIdAndInitiatorId(eventId, userId)) {
             throw new ObjectNotFoundException("Event not found");
         }
-        List<Request> requests = requestRepository.findAllByEvent_Id(eventId);
+        List<Request> requests = requestRepository.findAllByEventId(eventId);
         if (requests.isEmpty()) {
             return Collections.emptyList();
         }
@@ -105,8 +107,11 @@ public class PrivateServiceImpl implements PrivateService {
     @Override
     @Transactional
     public EventFullDto updateEvent(Long userId, Long eventId, UpdateEventUserRequest eventDto) {
-        Event event = eventRepository.findByIdAndInitiatorId(eventId, userId)
+        Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ObjectNotFoundException("Event not found"));
+        if (event.getState().equals(PUBLISHED)) {
+            throw new DataIsNotCorrectException("Нельзя менять опубликованные события");
+        }
         if (event.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
             throw new DataIsNotCorrectException("Поздняк метаться");
         }
@@ -140,9 +145,6 @@ public class PrivateServiceImpl implements PrivateService {
             event.setRequestModeration(eventDto.getRequestModeration());
         }
         if (eventDto.getStateAction() != null) {
-            if (event.getState().equals(PUBLISHED)) {
-                throw new DataIsNotCorrectException("Нельзя менять опубликованные события");
-            }
             if (eventDto.getStateAction().equals(SEND_TO_REVIEW)) {
                 event.setState(State.PENDING);
                 event.setPublishedOn(LocalDateTime.now());
@@ -157,34 +159,74 @@ public class PrivateServiceImpl implements PrivateService {
         return EventMapper.toEventFullDto(event);
     }
 
-
     @Override
     @Transactional
-    public EventRequestStatusUpdateResult updateRequestStatus(Long userId,
-                                                              Long eventId,
-                                                              EventRequestStatusUpdateRequest statusUpdateRequests) {
+    public ParticipationRequestDto createRequest(Long userId, Long eventId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ObjectNotFoundException("User not found"));
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ObjectNotFoundException("Event not found"));
         if (event.getParticipantLimit() != 0 && event.getConfirmedRequests() != null &&
                 event.getConfirmedRequests() == event.getParticipantLimit()) {
             throw new DataIsNotCorrectException("Лимит заявок на участие исчерпан");
         }
+        Optional<Request> requestFromRep = requestRepository.findByEventIdAndRequesterId(eventId, userId);
+        if (requestFromRep.isPresent()) {
+            throw new DataIsNotCorrectException("Запрос от пользователя на это событие уже есть");
+        }
+        if (userId.equals(event.getInitiator().getId())) {
+            throw new DataIsNotCorrectException("Initiator can't be a requester");
+        }
+        if (!event.getState().equals(PUBLISHED)) {
+            throw new DataIsNotCorrectException("Event is not published");
+        }
+        Request request = new Request(LocalDateTime.now(), event, user, Status.PENDING);
+        if (event.getRequestModeration().equals(false)) {
+            request.setStatus(Status.CONFIRMED);
+            Long confirmedRequests = Optional.ofNullable(event.getConfirmedRequests()).orElse(0L);
+            event.setConfirmedRequests(confirmedRequests + 1);
+            eventRepository.save(event);
+        }
+        return RequestMapper.toParticipationRequestDto(requestRepository.save(request));
+    }
+
+    @Override
+    @Transactional
+    public EventRequestStatusUpdateResult updateRequestsStatus(Long userId,
+                                                               Long eventId,
+                                                               EventRequestStatusUpdateRequest statusUpdateRequests) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new ObjectNotFoundException("Event not found"));
+        if (!event.getInitiator().getId().equals(userId)) {
+            throw new OperationIsNotSupportedException("Вы не являетесь инициатором события");
+        }
+        if (event.getParticipantLimit() != 0 && event.getConfirmedRequests() != null &&
+                event.getConfirmedRequests() == event.getParticipantLimit()) {
+            throw new DataIsNotCorrectException("Лимит заявок на участие исчерпан");
+        }
         EventRequestStatusUpdateResult updatedRequests = new EventRequestStatusUpdateResult();
-        List<Request> requests = requestRepository.findAllByEvent_Id(eventId);
-        List<Request> requestsForUpdate = requests.stream().filter(r -> statusUpdateRequests.getRequestIds().contains(r.getId())).collect(toList());
+        List<Request> requests = requestRepository.findAllByEventId(eventId);
+        List<Request> requestsForUpdate = requests.stream().filter(r -> statusUpdateRequests.getRequestIds()
+                .contains(r.getId())).collect(toList());
         for (Request request : requestsForUpdate) {
-            if (event.getParticipantLimit() != 0 && event.getConfirmedRequests() == event.getParticipantLimit()) {
+            if (event.getParticipantLimit() != 0 && event.getConfirmedRequests() != null &&
+                    (event.getConfirmedRequests() == event.getParticipantLimit())) {
                 request.setStatus(REJECTED);
             }
             if (request.getStatus().equals(Status.PENDING)) {
                 if (statusUpdateRequests.getStatus().equals(CONFIRMED)) {
                     request.setStatus(CONFIRMED);
-                    event.setConfirmedRequests(event.getConfirmedRequests() + 1);
-                    updatedRequests.getConfirmedRequests().add(RequestMapper.toParticipationRequestDto(request));
+                    Long confirmedRequests = Optional.ofNullable(event.getConfirmedRequests()).orElse(0L);
+                    event.setConfirmedRequests(confirmedRequests + 1);
+                    List<ParticipationRequestDto> confirmedRequestsList = updatedRequests.getConfirmedRequests();
+                    confirmedRequestsList.add(RequestMapper.toParticipationRequestDto(request));
+                    updatedRequests.setConfirmedRequests(confirmedRequestsList);
                 }
                 if ((statusUpdateRequests.getStatus().equals(REJECTED))) {
                     request.setStatus(REJECTED);
-                    updatedRequests.getRejectedRequests().add(RequestMapper.toParticipationRequestDto(request));
+                    List<ParticipationRequestDto> rejectedRequests = updatedRequests.getRejectedRequests();
+                    rejectedRequests.add(RequestMapper.toParticipationRequestDto(request));
+                    updatedRequests.setRejectedRequests(rejectedRequests);
                 }
             }
         }
@@ -200,34 +242,6 @@ public class PrivateServiceImpl implements PrivateService {
             return Collections.emptyList();
         }
         return requests.stream().map(RequestMapper::toParticipationRequestDto).collect(toList());
-    }
-
-    @Override
-    @Transactional
-    public ParticipationRequestDto createRequest(Long userId, Long eventId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ObjectNotFoundException("User not found"));
-        Event event = eventRepository.findById(eventId)
-                .orElseThrow(() -> new ObjectNotFoundException("Event not found "));
-        if (requestRepository.existsByRequesterIdAndEventId(userId, eventId)) {
-            throw new ObjectAlreadyExistsException("Request already exist");
-        }
-        if (userId.equals(event.getInitiator().getId())) {
-            throw new OperationIsNotSupportedException("Initiator can't be a requester");
-        }
-        if (!event.getState().equals(PUBLISHED)) {
-            throw new OperationIsNotSupportedException("Event is not published");
-        }
-        if (event.getParticipantLimit() == event.getConfirmedRequests()) {
-            throw new OperationIsNotSupportedException("Limit is reached");
-        }
-        Request request = new Request(event, user, Status.PENDING);
-        if (event.getRequestModeration().equals(false)) {
-            request.setStatus(Status.CONFIRMED);
-            event.setConfirmedRequests(event.getConfirmedRequests() + 1);
-            eventRepository.save(event);
-        }
-        return RequestMapper.toParticipationRequestDto(requestRepository.save(request));
     }
 
     @Override

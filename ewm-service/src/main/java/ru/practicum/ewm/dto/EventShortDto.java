@@ -10,7 +10,7 @@ import lombok.*;
 public class EventShortDto {
     private Long id;
     private String annotation;
-    private CategoryDto categoryDto;
+    private CategoryDto category;
     private Long confirmedRequests;
     private String eventDate;
     private UserShortDto initiator;

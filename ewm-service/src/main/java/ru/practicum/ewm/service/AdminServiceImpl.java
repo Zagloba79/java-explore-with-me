@@ -37,6 +37,10 @@ public class AdminServiceImpl implements AdminService {
     @Override
     @Transactional
     public UserDto createUser(NewUserRequest newUser) {
+        Optional<User> userFromRep = userRepository.findByName(newUser.getName());
+        if (userFromRep.isPresent()) {
+            throw new ObjectAlreadyExistsException("Пользователь с таким именем уже есть");
+        }
         User user = UserMapper.toUser(newUser);
         user = userRepository.save(user);
         return UserMapper.toUserDto(user);
@@ -71,7 +75,7 @@ public class AdminServiceImpl implements AdminService {
     public CategoryDto createCategory(NewCategoryDto newCategoryDto) {
         Optional<Category> categoryFromRep = categoryRepository.findByName(newCategoryDto.getName());
         if (categoryFromRep.isPresent()) {
-            return CategoryMapper.toCategoryDto(categoryFromRep.get());
+            throw new ObjectAlreadyExistsException("Категория с таким названием уже есть");
         }
         return CategoryMapper.toCategoryDto(categoryRepository.save(CategoryMapper.toCategory(newCategoryDto)));
     }
@@ -81,8 +85,11 @@ public class AdminServiceImpl implements AdminService {
     public CategoryDto updateCategory(long categoryId, CategoryDto categoryDto) {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new ObjectNotFoundException("Нет данной категории"));
+        Optional<Category> categoryFromRep = categoryRepository.findByName(categoryDto.getName());
+        if (categoryFromRep.isPresent()) {
+            throw new ObjectAlreadyExistsException("Категория с таким названием уже есть");
+        }
         category.setName(categoryDto.getName());
-        categoryValidate(category);
         return CategoryMapper.toCategoryDto(category);
     }
 
@@ -155,7 +162,7 @@ public class AdminServiceImpl implements AdminService {
         }
         if (eventDto.getEventDate() != null) {
             if (LocalDateTime.parse(eventDto.getEventDate(), FORMATTER).isBefore(LocalDateTime.now().plusHours(1))) {
-                throw new OperationIsNotSupportedException("Поздняк метаться");
+                throw new DataIsNotCorrectException("Поздняк метаться");
             } else {
                 event.setEventDate(LocalDateTime.parse(eventDto.getEventDate(), FORMATTER));
             }
@@ -174,7 +181,7 @@ public class AdminServiceImpl implements AdminService {
         }
         if (eventDto.getStateAction() != null) {
             if (!event.getState().equals(PENDING)) {
-                throw new OperationIsNotSupportedException("Можно изменять события только в статусе 'Pending'");
+                throw new DataIsNotCorrectException("Можно изменять события только в статусе 'Pending'");
             }
             if (eventDto.getStateAction().equals(StateActionForAdmin.PUBLISH_EVENT)) {
                 event.setState(State.PUBLISHED);
@@ -208,16 +215,5 @@ public class AdminServiceImpl implements AdminService {
             return Collections.emptySet();
         }
         return eventRepository.findAllByIdIn(eventIds);
-    }
-
-    private void categoryValidate(Category category) {
-//        if (category.getName().isBlank()) {
-//            throw new ValidationException("Название категории некорректно");
-//        }
-        for (Category categoryFromRep : categoryRepository.findAll()) {
-            if (!categoryFromRep.getName().equals(category.getName())) {
-                throw new ObjectAlreadyExistsException("The category already exists");
-            }
-        }
     }
 }

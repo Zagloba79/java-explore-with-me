@@ -16,7 +16,7 @@ public interface PrivateService {
 
     EventFullDto updateEvent(Long userId, Long eventId, UpdateEventUserRequest eventDto);
 
-    EventRequestStatusUpdateResult updateRequestStatus(Long userId, Long eventId, EventRequestStatusUpdateRequest request);
+    EventRequestStatusUpdateResult updateRequestsStatus(Long userId, Long eventId, EventRequestStatusUpdateRequest request);
 
     List<ParticipationRequestDto> getRequestsByUser(Long userId);
 

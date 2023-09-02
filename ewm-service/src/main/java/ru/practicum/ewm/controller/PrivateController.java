@@ -56,7 +56,7 @@ public class PrivateController {
     public ResponseEntity<EventRequestStatusUpdateResult> updateRequestStatus(@PathVariable Long userId,
                                                                               @PathVariable Long eventId,
                                                                               @RequestBody EventRequestStatusUpdateRequest request) {
-        return new ResponseEntity<>(service.updateRequestStatus(userId, eventId, request), HttpStatus.OK);
+        return new ResponseEntity<>(service.updateRequestsStatus(userId, eventId, request), HttpStatus.OK);
     }
 
     @GetMapping("/requests")

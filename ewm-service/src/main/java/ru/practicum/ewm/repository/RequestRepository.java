@@ -9,11 +9,11 @@ import java.util.Optional;
 
 @Repository
 public interface RequestRepository extends JpaRepository<Request, Long> {
-    List<Request> findAllByEvent_Id(Long eventId);
+    List<Request> findAllByEventId(Long eventId);
 
     List<Request> findAllByRequesterId(Long userId);
 
-    boolean existsByRequesterIdAndEventId(Long userId, Long eventId);
-
     Optional<Request> findByIdAndRequesterId(Long requestId, Long userId);
+
+    Optional<Request> findByEventIdAndRequesterId(Long eventId, Long userId);
 }

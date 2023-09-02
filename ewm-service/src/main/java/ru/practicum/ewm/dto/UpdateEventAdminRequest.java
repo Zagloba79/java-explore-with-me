@@ -19,7 +19,6 @@ public class UpdateEventAdminRequest {
     private Long category;
     @Size(min = 20, max = 7000)
     private String description;
-    @NotBlank
     private String eventDate;
     private Location location;
     private Boolean paid;

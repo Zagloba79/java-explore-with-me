@@ -20,6 +20,7 @@ import ru.practicum.ewm.repository.EventRepository;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static java.util.stream.Collectors.toList;
@@ -33,6 +34,7 @@ public class PublicServiceImpl implements PublicService {
     private final EventRepository eventRepository;
     private final CompilationRepository compilationRepository;
     private final StatClient statClient;
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
     public List<CategoryDto> getAllCategories(int from, int size) {
@@ -54,19 +56,27 @@ public class PublicServiceImpl implements PublicService {
 
     @Override
     public List<EventShortDto> getAllEvents(String text, List<Long> categories, Boolean paid,
-                                            LocalDateTime rangeStart, LocalDateTime rangeEnd,
+                                            String rangeStart, String rangeEnd,
                                             Boolean onlyAvailable, String sort, int from, int size,
                                             HttpServletRequest request) {
+
+        LocalDateTime startTime;
+        LocalDateTime endTime;
         if (rangeStart == null) {
-            rangeStart = LocalDateTime.now();
-            if (rangeEnd == null) {
-                rangeEnd = LocalDateTime.now().plusYears(100);
-            } else if (rangeStart.isAfter(rangeEnd)) {
-                rangeEnd = LocalDateTime.now().plusYears(100);
+            startTime = LocalDateTime.now();
+        }else {
+            startTime = LocalDateTime.parse(rangeStart, FORMATTER);
+        }
+        if (rangeEnd == null) {
+            endTime = LocalDateTime.now().plusYears(1000);
+        } else {
+            endTime = LocalDateTime.parse(rangeEnd, FORMATTER);
+            if (startTime.isAfter(endTime)) {
+                endTime = LocalDateTime.now().plusYears(1000);
             }
         }
-        List<Event> events = eventRepository.getAllByParam(text, categories, paid, rangeStart,
-                rangeEnd, onlyAvailable);
+        List<Event> events = eventRepository.getAllByParam(text, categories, paid, startTime,
+                endTime, onlyAvailable);
         if (sort != null) {
             if (sort.equals("EVENT_DATE")) {
                 events = events.stream().sorted(Comparator.comparing(Event::getEventDate)).collect(toList());

@@ -25,10 +25,12 @@ public class Request {
     @OneToOne
     @JoinColumn(name = "requester_id", referencedColumnName = "id", nullable = false)
     private User requester;
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    public Request(Event event, User requester, Status status) {
+    public Request(LocalDateTime created, Event event, User requester, Status status) {
+        this.created = created;
         this.event = event;
         this.requester = requester;
         this.status = status;
