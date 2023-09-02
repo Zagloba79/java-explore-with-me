@@ -123,7 +123,7 @@ public class AdminServiceImpl implements AdminService {
         if (updateCompilationRequest.getPinned() != null) {
             compilation.setPinned(updateCompilationRequest.getPinned());
         }
-        if (!updateCompilationRequest.getTitle().isBlank()) {
+        if (updateCompilationRequest.getTitle() != null && (!updateCompilationRequest.getTitle().isBlank())) {
             compilation.setTitle(updateCompilationRequest.getTitle());
         }
         if (updateCompilationRequest.getEvents() != null) {
