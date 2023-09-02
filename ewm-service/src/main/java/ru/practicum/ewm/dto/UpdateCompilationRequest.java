@@ -5,8 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
+import javax.validation.constraints.Size;
 import java.util.List;
 
 @Getter
@@ -16,7 +15,6 @@ import java.util.List;
 public class UpdateCompilationRequest {
     private List<Long> events;
     private Boolean pinned;
-    @Min(1)
-    @Max(50)
+    @Size(min = 1, max = 50)
     private String title;
 }

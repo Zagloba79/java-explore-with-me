@@ -10,6 +10,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class EventConfirmedRequests {
-    private Long eventId;
+    private Long event;
     private Long confirmedRequestsCount;
 }

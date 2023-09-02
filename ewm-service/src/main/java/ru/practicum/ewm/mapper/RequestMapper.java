@@ -1,30 +1,19 @@
 package ru.practicum.ewm.mapper;
 
 import ru.practicum.ewm.dto.ParticipationRequestDto;
-import ru.practicum.ewm.entity.Event;
 import ru.practicum.ewm.entity.Request;
-import ru.practicum.ewm.entity.User;
 
-import java.time.LocalDateTime;
-
-import static ru.practicum.ewm.enums.Status.*;
+import java.time.format.DateTimeFormatter;
 
 public class RequestMapper {
-    public static Request toRequest(Event event, User requester) {
-        return Request.builder()
-                .requester(requester)
-                .event(event)
-                .created(LocalDateTime.now())
-                .status(event.getRequestModeration() ? PENDING : CONFIRMED)
-                .build();
-    }
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     public static ParticipationRequestDto toParticipationRequestDto(Request entity) {
         return ParticipationRequestDto.builder()
                 .id(entity.getId())
-                .created(entity.getCreated())
-                .requesterId(entity.getRequester().getId())
-                .eventId(entity.getEvent().getId())
+                .created(entity.getCreated().format(FORMATTER))
+                .requester(entity.getRequester().getId())
+                .event(entity.getEvent().getId())
                 .status(entity.getStatus())
                 .build();
     }

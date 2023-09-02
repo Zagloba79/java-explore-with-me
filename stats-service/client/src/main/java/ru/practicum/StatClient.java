@@ -2,14 +2,12 @@ package ru.practicum;
 
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 
 import java.util.List;
 import java.util.Map;
 
-@Service
 public class StatClient extends BaseClient {
 
     public void setUpStatClient(String serverUrl) {

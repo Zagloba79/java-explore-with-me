@@ -18,6 +18,7 @@ import ru.practicum.ewm.mapper.UserMapper;
 import ru.practicum.ewm.repository.*;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import static java.util.stream.Collectors.toList;
@@ -31,13 +32,12 @@ public class AdminServiceImpl implements AdminService {
     private final CategoryRepository categoryRepository;
     private final EventRepository eventRepository;
     private final CompilationRepository compilationRepository;
-    private final LocationRepository locationRepository;
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
     @Transactional
     public UserDto createUser(NewUserRequest newUser) {
         User user = UserMapper.toUser(newUser);
-        userValidate(user);
         user = userRepository.save(user);
         return UserMapper.toUserDto(user);
     }
@@ -69,9 +69,11 @@ public class AdminServiceImpl implements AdminService {
     @Override
     @Transactional
     public CategoryDto createCategory(NewCategoryDto newCategoryDto) {
-        Category category = CategoryMapper.toCategory(newCategoryDto);
-        categoryValidate(category);
-        return CategoryMapper.toCategoryDto(categoryRepository.save(category));
+        Optional<Category> categoryFromRep = categoryRepository.findByName(newCategoryDto.getName());
+        if (categoryFromRep.isPresent()) {
+            return CategoryMapper.toCategoryDto(categoryFromRep.get());
+        }
+        return CategoryMapper.toCategoryDto(categoryRepository.save(CategoryMapper.toCategory(newCategoryDto)));
     }
 
     @Override
@@ -99,10 +101,10 @@ public class AdminServiceImpl implements AdminService {
     public CompilationDto createCompilation(NewCompilationDto newCompilationDto) {
         Compilation compilation = CompilationMapper.toCompilation(newCompilationDto);
         Set<Event> events = findEvents(newCompilationDto.getEvents());
-        if (!events.isEmpty()) {
+        if (events != null && !events.isEmpty()) {
             compilation.setEvents(events);
         }
-        compilation = compilationRepository.save(compilation);
+        compilationRepository.save(compilation);
         return CompilationMapper.toCompilationDto(compilation);
     }
 
@@ -144,18 +146,18 @@ public class AdminServiceImpl implements AdminService {
         if (eventDto.getAnnotation() != null && !eventDto.getTitle().isBlank()) {
             event.setAnnotation(eventDto.getAnnotation());
         }
-        if (eventDto.getCategoryId() != null) {
-            event.setCategory(categoryRepository.findById(eventDto.getCategoryId())
+        if (eventDto.getCategory() != null) {
+            event.setCategory(categoryRepository.findById(eventDto.getCategory())
                     .orElseThrow(() -> new ObjectNotFoundException("Category not found")));
         }
-        if (!eventDto.getDescription().isBlank()) {
+        if (eventDto.getDescription() != null && !eventDto.getDescription().isBlank()) {
             event.setDescription(eventDto.getDescription());
         }
         if (eventDto.getEventDate() != null) {
-            if (eventDto.getEventDate().isBefore(LocalDateTime.now().plusHours(1))) {
+            if (LocalDateTime.parse(eventDto.getEventDate(), FORMATTER).isBefore(LocalDateTime.now().plusHours(1))) {
                 throw new OperationIsNotSupportedException("Поздняк метаться");
             } else {
-                event.setEventDate(eventDto.getEventDate());
+                event.setEventDate(LocalDateTime.parse(eventDto.getEventDate(), FORMATTER));
             }
         }
         if (eventDto.getLocation() != null) {
@@ -182,7 +184,7 @@ public class AdminServiceImpl implements AdminService {
                 event.setState(State.CANCELED);
             }
         }
-        if (!eventDto.getTitle().isBlank()) {
+        if (eventDto.getTitle() != null && !eventDto.getTitle().isBlank()) {
             event.setTitle(eventDto.getTitle());
         }
         return EventMapper.toEventFullDto(event);
@@ -208,19 +210,10 @@ public class AdminServiceImpl implements AdminService {
         return eventRepository.findAllByIdIn(eventIds);
     }
 
-    private void userValidate(User user) {
-        if (user.getEmail() == null || !user.getEmail().contains("@") || !user.getEmail().contains(".")) {
-            throw new ValidationException("Некорректный e-mail пользователя");
-        }
-        if (user.getName() == null || user.getName().isBlank()) {
-            throw new ValidationException("Некорректный логин пользователя");
-        }
-    }
-
     private void categoryValidate(Category category) {
-        if (category.getName().isBlank()) {
-            throw new ValidationException("Название категории некорректно");
-        }
+//        if (category.getName().isBlank()) {
+//            throw new ValidationException("Название категории некорректно");
+//        }
         for (Category categoryFromRep : categoryRepository.findAll()) {
             if (!categoryFromRep.getName().equals(category.getName())) {
                 throw new ObjectAlreadyExistsException("The category already exists");

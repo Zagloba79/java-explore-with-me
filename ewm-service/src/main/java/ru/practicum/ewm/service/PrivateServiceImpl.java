@@ -22,6 +22,7 @@ import ru.practicum.ewm.repository.UserRepository;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 
@@ -40,19 +41,19 @@ public class PrivateServiceImpl implements PrivateService {
     private final RequestRepository requestRepository;
     private final CategoryRepository categoryRepository;
     private final StatClient statClient;
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
     @Transactional
     public EventFullDto createEvent(Long userId, NewEventDto eventDto) {
-        userRepository.findById(userId)
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ObjectNotFoundException("User not found"));
-        dateValidate(eventDto.getEventDate());
+        dateValidate(LocalDateTime.parse(eventDto.getEventDate(), FORMATTER));
         Event event = EventMapper.toEvent(eventDto);
-        event.setCategory(categoryRepository.findById(eventDto.getCategoryId())
+        event.setCategory(categoryRepository.findById(eventDto.getCategory())
                 .orElseThrow(() -> new ObjectNotFoundException("Category not found")));
         event.setPublishedOn(LocalDateTime.now());
-        event.setInitiator(userRepository.findById(userId)
-                .orElseThrow(() -> new ObjectNotFoundException("User not found")));
+        event.setInitiator(user);
         event.setViews(0L);
         return EventMapper.toEventFullDto(eventRepository.save(event));
     }
@@ -94,7 +95,7 @@ public class PrivateServiceImpl implements PrivateService {
         if (!eventRepository.existsByIdAndInitiatorId(eventId, userId)) {
             throw new ObjectNotFoundException("Event not found");
         }
-        List<Request> requests = requestRepository.findAllByEventId(eventId);
+        List<Request> requests = requestRepository.findAllByEvent_Id(eventId);
         if (requests.isEmpty()) {
             return Collections.emptyList();
         }
@@ -104,8 +105,6 @@ public class PrivateServiceImpl implements PrivateService {
     @Override
     @Transactional
     public EventFullDto updateEvent(Long userId, Long eventId, UpdateEventUserRequest eventDto) {
-        userRepository.findById(userId)
-                .orElseThrow(() -> new ObjectNotFoundException("User not found"));
         Event event = eventRepository.findByIdAndInitiatorId(eventId, userId)
                 .orElseThrow(() -> new ObjectNotFoundException("Event not found"));
         if (event.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
@@ -118,15 +117,14 @@ public class PrivateServiceImpl implements PrivateService {
             event.setCategory(categoryRepository.findById(eventDto.getCategoryId())
                     .orElseThrow(() -> new ObjectNotFoundException("Category not found")));
         }
-        if (!eventDto.getDescription().isBlank()) {
+        if (eventDto.getDescription() != null && !eventDto.getDescription().isBlank()) {
             event.setDescription(eventDto.getDescription());
         }
         if (eventDto.getEventDate() != null) {
-            event.setEventDate(eventDto.getEventDate());
-            if (eventDto.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
+            if (LocalDateTime.parse(eventDto.getEventDate(), FORMATTER).isBefore(LocalDateTime.now().plusHours(2))) {
                 throw new DataIsNotCorrectException("Поздняк метаться");
             } else {
-                event.setEventDate(eventDto.getEventDate());
+                event.setEventDate(LocalDateTime.parse(eventDto.getEventDate(), FORMATTER));
             }
         }
         if (eventDto.getLocation() != null) {
@@ -146,14 +144,14 @@ public class PrivateServiceImpl implements PrivateService {
                 throw new DataIsNotCorrectException("Нельзя менять опубликованные события");
             }
             if (eventDto.getStateAction().equals(SEND_TO_REVIEW)) {
-                event.setState(PUBLISHED);
+                event.setState(State.PENDING);
                 event.setPublishedOn(LocalDateTime.now());
             }
             if (eventDto.getStateAction().equals(CANCEL_REVIEW)) {
                 event.setState(State.CANCELED);
             }
         }
-        if (!eventDto.getTitle().isBlank()) {
+        if (eventDto.getTitle() != null && !eventDto.getTitle().isBlank()) {
             event.setTitle(eventDto.getTitle());
         }
         return EventMapper.toEventFullDto(event);
@@ -165,22 +163,16 @@ public class PrivateServiceImpl implements PrivateService {
     public EventRequestStatusUpdateResult updateRequestStatus(Long userId,
                                                               Long eventId,
                                                               EventRequestStatusUpdateRequest statusUpdateRequests) {
-        userRepository.findById(userId)
-                .orElseThrow(() -> new ObjectNotFoundException("User not found"));
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ObjectNotFoundException("Event not found"));
-        if (event.getParticipantLimit() != 0 && event.getConfirmedRequests() == event.getParticipantLimit()) {
+        if (event.getParticipantLimit() != 0 && event.getConfirmedRequests() != null &&
+                event.getConfirmedRequests() == event.getParticipantLimit()) {
             throw new DataIsNotCorrectException("Лимит заявок на участие исчерпан");
         }
-        if (event.getRequestModeration().equals(true) || event.getParticipantLimit() > 0) {
-            if (!event.getInitiator().getId().equals(userId)) {
-                throw new OperationIsNotSupportedException("Вы не инициатор события");
-            }
-        }
         EventRequestStatusUpdateResult updatedRequests = new EventRequestStatusUpdateResult();
-        statusUpdateRequests.getRequestIds().forEach(requestId -> {
-            Request request = requestRepository.findById(requestId)
-                    .orElseThrow(() -> new ObjectNotFoundException("Данного запроса не найденно"));
+        List<Request> requests = requestRepository.findAllByEvent_Id(eventId);
+        List<Request> requestsForUpdate = requests.stream().filter(r -> statusUpdateRequests.getRequestIds().contains(r.getId())).collect(toList());
+        for (Request request : requestsForUpdate) {
             if (event.getParticipantLimit() != 0 && event.getConfirmedRequests() == event.getParticipantLimit()) {
                 request.setStatus(REJECTED);
             }
@@ -195,7 +187,7 @@ public class PrivateServiceImpl implements PrivateService {
                     updatedRequests.getRejectedRequests().add(RequestMapper.toParticipationRequestDto(request));
                 }
             }
-        });
+        }
         return updatedRequests;
     }
 

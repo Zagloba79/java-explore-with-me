@@ -47,13 +47,13 @@ public class AdminController {
     }
 
     @PatchMapping("/categories/{catId}")
-    public ResponseEntity<CategoryDto> updateCategory(@PathVariable("catId") long catId,
+    public ResponseEntity<CategoryDto> updateCategory(@PathVariable("catId") Long catId,
                                                       @RequestBody @Valid CategoryDto categoryDto) {
         return new ResponseEntity<>(service.updateCategory(catId, categoryDto), HttpStatus.OK);
     }
 
     @DeleteMapping("/categories/{catId}")
-    public ResponseEntity<Void> deleteCategory(@PathVariable long catId) {
+    public ResponseEntity<Void> deleteCategory(@PathVariable Long catId) {
         service.deleteCategory(catId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
@@ -64,20 +64,20 @@ public class AdminController {
     }
 
     @PatchMapping("/compilations/{compId}")
-    public ResponseEntity<CompilationDto> updateCompilation(@PathVariable long compId,
+    public ResponseEntity<CompilationDto> updateCompilation(@PathVariable Long compId,
                                                             @RequestBody
                                                             @Valid UpdateCompilationRequest updateCompilationRequest) {
         return new ResponseEntity<>(service.updateCompilation(compId, updateCompilationRequest), HttpStatus.OK);
     }
 
     @DeleteMapping("/compilations/{compId}")
-    public ResponseEntity<Void> deleteCompilation(@PathVariable long compId) {
+    public ResponseEntity<Void> deleteCompilation(@PathVariable Long compId) {
         service.deleteCompilation(compId);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @PatchMapping("/events/{eventId}")
-    public ResponseEntity<EventFullDto> updateEvent(@PathVariable long eventId,
+    public ResponseEntity<EventFullDto> updateEvent(@PathVariable Long eventId,
                                                     @RequestBody
                                                     @Valid UpdateEventAdminRequest updateEventAdminRequest) {
         return new ResponseEntity<>(service.updateEvent(eventId, updateEventAdminRequest), HttpStatus.OK);

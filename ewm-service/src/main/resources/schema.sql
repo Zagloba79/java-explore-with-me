@@ -26,17 +26,19 @@ CREATE TABLE IF NOT EXISTS events (
   id BIGSERIAL NOT NULL,
   annotation VARCHAR(2000) NOT NULL,
   category_id BIGINT NOT NULL,
+  confirmed_requests BIGINT,
+  created_on TIMESTAMP WITHOUT TIME ZONE NOT NULL,
   description VARCHAR(7000) NOT NULL,
   event_date TIMESTAMP WITHOUT TIME ZONE NOT NULL,
-  location_id BIGINT NOT NULL,
-  created_on TIMESTAMP WITHOUT TIME ZONE NOT NULL,
   initiator_id BIGINT NOT NULL,
-  paid boolean DEFAULT FALSE,
-  participant_limit BIGINT NOT NULL,
-  published_on TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+  location_id BIGINT NOT NULL,
+  paid BOOLEAN DEFAULT FALSE,
+  participant_limit BIGINT,
+  published_on TIMESTAMP WITHOUT TIME ZONE,
   request_moderation BOOLEAN DEFAULT TRUE,
-  title VARCHAR(120),
   state VARCHAR(50),
+  title VARCHAR(120),
+  views BIGINT,
   CONSTRAINT PK_EVENT PRIMARY KEY (id),
   CONSTRAINT FK_EVENTS_CATEGORIES_ID FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE CASCADE,
   CONSTRAINT FK_EVENTS_LOCATIONS_ID_FK FOREIGN KEY (location_id) REFERENCES locations (id) ON DELETE CASCADE,
@@ -58,12 +60,13 @@ CREATE TABLE IF NOT EXISTS compilations (
   id BIGSERIAL NOT NULL,
   pinned BOOLEAN NOT NULL,
   title VARCHAR(255) NOT NULL,
-  CONSTRAINT PK_COMPILATION PRIMARY KEY (id)
+  CONSTRAINT PK_COMPILATION PRIMARY KEY (id),
+  CONSTRAINT UQ_COMPILATIONS_TITLE UNIQUE (title)
 );
 
 CREATE TABLE IF NOT EXISTS compilations_events (
-  compilation_id BIGINT NOT NULL,
-  event_id BIGINT NOT NULL,
+  compilation_id BIGINT REFERENCES compilations (id) ON DELETE CASCADE,
+  event_id BIGINT REFERENCES events (id) ON DELETE CASCADE,
   CONSTRAINT pk_compilations_events PRIMARY KEY (compilation_id, event_id),
   CONSTRAINT fk_compilations FOREIGN KEY (compilation_id) REFERENCES compilations (id) ON DELETE CASCADE,
   CONSTRAINT fk_events FOREIGN KEY (event_id) REFERENCES events (id) ON DELETE CASCADE

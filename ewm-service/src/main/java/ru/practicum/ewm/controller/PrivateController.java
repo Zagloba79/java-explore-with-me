@@ -27,29 +27,35 @@ public class PrivateController {
     }
 
     @GetMapping("/events/{eventId}")
-    public ResponseEntity<EventFullDto> getEvent(@PathVariable Long userId, @PathVariable Long eventId, HttpServletRequest request) {
+    public ResponseEntity<EventFullDto> getEvent(@PathVariable Long userId,
+                                                 @PathVariable Long eventId,
+                                                 HttpServletRequest request) {
         return new ResponseEntity<>(service.getEventById(userId, eventId, request), HttpStatus.OK);
     }
 
     @GetMapping("/events/{eventId}/requests")
-    public ResponseEntity<List<ParticipationRequestDto>> getRequestsByEvent(@PathVariable Long userId, @PathVariable Long eventId) {
+    public ResponseEntity<List<ParticipationRequestDto>> getRequestsByEvent(@PathVariable Long userId,
+                                                                            @PathVariable Long eventId) {
         return new ResponseEntity<>(service.getRequestsByEvent(userId, eventId), HttpStatus.OK);
     }
 
     @PostMapping("/events")
-    public ResponseEntity<EventFullDto> createEvent(@PathVariable Long userId, @RequestBody @Valid NewEventDto eventDto) {
+    public ResponseEntity<EventFullDto> createEvent(@PathVariable Long userId,
+                                                    @RequestBody @Valid NewEventDto eventDto) {
         return new ResponseEntity<>(service.createEvent(userId, eventDto), HttpStatus.CREATED);
     }
 
     @PatchMapping("/events/{eventId}")
-    public ResponseEntity<EventFullDto> updateEvent(@PathVariable Long userId, @PathVariable Long eventId,
-                                    @RequestBody @Valid UpdateEventUserRequest eventDto) {
+    public ResponseEntity<EventFullDto> updateEvent(@PathVariable Long userId,
+                                                    @PathVariable Long eventId,
+                                                    @RequestBody @Valid UpdateEventUserRequest eventDto) {
         return new ResponseEntity<>(service.updateEvent(userId, eventId, eventDto), HttpStatus.OK);
     }
 
     @PatchMapping("/events/{eventId}/requests")
-    public ResponseEntity<EventRequestStatusUpdateResult> updateRequestStatus(@PathVariable Long userId, @PathVariable Long eventId,
-                                                              @RequestBody EventRequestStatusUpdateRequest request) {
+    public ResponseEntity<EventRequestStatusUpdateResult> updateRequestStatus(@PathVariable Long userId,
+                                                                              @PathVariable Long eventId,
+                                                                              @RequestBody EventRequestStatusUpdateRequest request) {
         return new ResponseEntity<>(service.updateRequestStatus(userId, eventId, request), HttpStatus.OK);
     }
 
@@ -59,12 +65,14 @@ public class PrivateController {
     }
 
     @PostMapping("/requests")
-    public ResponseEntity<ParticipationRequestDto> createRequest(@PathVariable Long userId, @RequestParam Long eventId) {
+    public ResponseEntity<ParticipationRequestDto> createRequest(@PathVariable Long userId,
+                                                                 @RequestParam Long eventId) {
         return new ResponseEntity<>(service.createRequest(userId, eventId), HttpStatus.CREATED);
     }
 
     @PatchMapping("/requests/{requestsId}/cancel")
-    public ResponseEntity<ParticipationRequestDto> canselRequest(@PathVariable Long userId, @PathVariable Long requestsId) {
+    public ResponseEntity<ParticipationRequestDto> canselRequest(@PathVariable Long userId,
+                                                                 @PathVariable Long requestsId) {
         return new ResponseEntity<>(service.canselRequest(userId, requestsId), HttpStatus.OK);
     }
 }

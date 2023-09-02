@@ -5,18 +5,18 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import javax.validation.constraints.Max;
-import javax.validation.constraints.Min;
+import javax.validation.constraints.*;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class NewUserRequest {
-    @Min(6)
-    @Max(254)
+    @NotBlank
+    @Size(min = 6, max = 254)
+    @Email
     private String email;
-    @Min(2)
-    @Max(250)
+    @NotBlank
+    @Size(min = 2, max = 250)
     private String name;
 }

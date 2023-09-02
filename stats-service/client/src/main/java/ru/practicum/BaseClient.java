@@ -2,18 +2,16 @@ package ru.practicum;
 
 import org.springframework.http.*;
 import org.springframework.lang.Nullable;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Map;
 
+@Service
 public class BaseClient {
     protected RestTemplate rest;
-
-    protected ResponseEntity<Object> get(String path) {
-        return get(path, null);
-    }
 
     protected ResponseEntity<Object> get(String path, @Nullable Map<String, Object> parameters) {
         return makeAndSendRequest(HttpMethod.GET, path, parameters, null);
@@ -27,41 +25,11 @@ public class BaseClient {
         return makeAndSendRequest(HttpMethod.POST, path, parameters, body);
     }
 
-    protected <T> ResponseEntity<Object> put(String path, T body) {
-        return put(path, null, body);
-    }
-
-    protected <T> ResponseEntity<Object> put(String path, @Nullable Map<String, Object> parameters, T body) {
-        return makeAndSendRequest(HttpMethod.PUT, path, parameters, body);
-    }
-
-    protected <T> ResponseEntity<Object> patch(String path) {
-        return patch(path, null, null);
-    }
-
-    protected <T> ResponseEntity<Object> patch(String path, T body) {
-        return patch(path, null, body);
-    }
-
-    protected <T> ResponseEntity<Object> patch(String path, @Nullable Map<String, Object> parameters, T body) {
-        return makeAndSendRequest(HttpMethod.PATCH, path, parameters, body);
-    }
-
-    protected ResponseEntity<Object> delete(String path) {
-        return delete(path, null);
-    }
-
-    protected ResponseEntity<Object> delete(String path,
-                                            @Nullable Map<String, Object> parameters) {
-        return makeAndSendRequest(HttpMethod.DELETE, path, parameters, null);
-    }
-
     private <T> ResponseEntity<Object> makeAndSendRequest(HttpMethod method,
                                                           String path,
                                                           @Nullable Map<String, Object> parameters,
                                                           @Nullable T body) {
         HttpEntity<T> requestEntity = new HttpEntity<>(body, defaultHeaders());
-
         ResponseEntity<Object> response;
         try {
             if (parameters != null) {

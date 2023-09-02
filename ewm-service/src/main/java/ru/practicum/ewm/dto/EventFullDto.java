@@ -2,7 +2,6 @@ package ru.practicum.ewm.dto;
 
 import lombok.*;
 import ru.practicum.ewm.entity.Location;
-import ru.practicum.ewm.enums.State;
 
 @Getter
 @Setter
@@ -12,7 +11,7 @@ import ru.practicum.ewm.enums.State;
 public class EventFullDto {
     private Long id;
     private String annotation;
-    private CategoryDto categoryDto;
+    private CategoryDto category;
     private Long confirmedRequests;
     private String createdOn;
     private String description;
@@ -23,7 +22,7 @@ public class EventFullDto {
     private Integer participantLimit = 0;
     private String publishedOn;
     private boolean requestModeration = true;
-    private State state;
+    private String state;
     private String title;
     private Long views;
 }

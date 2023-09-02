@@ -1,6 +1,7 @@
 package ru.practicum.ewm.handler;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -51,9 +52,9 @@ public class ErrorHandler {
         return buildApiError(e, HttpStatus.FORBIDDEN);
     }
 
-    @ExceptionHandler(ValidationException.class)
+    @ExceptionHandler({MethodArgumentNotValidException.class, ValidationException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ApiError handleValidationException(final ValidationException e) {
+    public ApiError handleValidationException(final Exception e) {
         return buildApiError(e, HttpStatus.BAD_REQUEST);
     }
 
