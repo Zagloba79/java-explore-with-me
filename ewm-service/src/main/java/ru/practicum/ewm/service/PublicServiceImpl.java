@@ -64,7 +64,7 @@ public class PublicServiceImpl implements PublicService {
         LocalDateTime endTime;
         if (rangeStart == null) {
             startTime = LocalDateTime.now();
-        }else {
+        } else {
             startTime = LocalDateTime.parse(rangeStart, FORMATTER);
         }
         if (rangeEnd == null) {
