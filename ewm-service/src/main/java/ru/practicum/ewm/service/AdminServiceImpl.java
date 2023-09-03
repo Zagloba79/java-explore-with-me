@@ -125,9 +125,6 @@ public class AdminServiceImpl implements AdminService {
         if (events != null) {
             compilation.setEvents(events);
         }
-        if (newCompilationDto.getPinned() == null) {
-            compilation.setPinned(false);
-        }
         compilationRepository.save(compilation);
         return CompilationMapper.toCompilationDto(compilation);
     }
