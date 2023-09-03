@@ -17,7 +17,7 @@ public class CompilationMapper {
     public Compilation toCompilation(NewCompilationDto newCompilationDto) {
         return Compilation.builder()
                 .title(newCompilationDto.getTitle())
-                .pinned(newCompilationDto.isPinned())
+                .pinned(newCompilationDto.getPinned())
                 .events(new HashSet<>())
                 .build();
     }
