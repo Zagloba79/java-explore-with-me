@@ -112,6 +112,9 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public CompilationDto createCompilation(NewCompilationDto newCompilationDto) {
+        if (newCompilationDto.getTitle().isBlank()) {
+            throw new ValidationException("Пустое название");
+        }
         Compilation compilation = CompilationMapper.toCompilation(newCompilationDto);
         Set<Event> events = findEvents(newCompilationDto.getEvents());
         if (newCompilationDto.getEvents().size() == events.size()) {
