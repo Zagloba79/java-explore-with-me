@@ -115,7 +115,7 @@ public class AdminServiceImpl implements AdminService {
         if (newCompilationDto.getTitle().isBlank()) {
             throw new ValidationException("Пустое название категории");
         }
-        if (newCompilationDto.getTitle().length() >= 51) {
+        if (newCompilationDto.getTitle().length() > 50) {
             throw new ValidationException("Очень длинное название");
         }
 
