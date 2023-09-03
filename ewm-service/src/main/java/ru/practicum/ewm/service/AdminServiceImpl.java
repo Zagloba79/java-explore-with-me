@@ -26,7 +26,6 @@ import static ru.practicum.ewm.enums.State.PENDING;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class AdminServiceImpl implements AdminService {
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;

@@ -29,7 +29,6 @@ import static ru.practicum.ewm.enums.State.PUBLISHED;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class PublicServiceImpl implements PublicService {
     private final CategoryRepository categoriesRepository;
     private final EventRepository eventRepository;

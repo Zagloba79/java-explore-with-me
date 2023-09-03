@@ -36,7 +36,6 @@ import static ru.practicum.ewm.enums.Status.CONFIRMED;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class PrivateServiceImpl implements PrivateService {
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
