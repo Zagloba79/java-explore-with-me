@@ -40,10 +40,9 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             "(lower(event.description) LIKE CONCAT('%', lower(?1), '%')))) " +
             "AND (event.category.id IN ?2 OR ?2 IS null) " +
             "AND (event.paid = ?3 OR ?3 IS null) " +
-            "AND (event.eventDate > ?4 OR ?4 IS null) AND (event.eventDate < ?5 OR ?5 IS null) " +
+            "AND (event.eventDate > ?4) AND (event.eventDate < ?5) " +
             "AND (?6 = false OR ((?6 = true and event.participantLimit > " +
-            "(SELECT count(*) FROM Request AS r WHERE event.id = r.event.id))) " +
-            "OR (event.participantLimit > 0 )) " +
+            "(SELECT count(*) FROM Request AS r WHERE event.id = r.event.id))) OR event.participantLimit = 0) " +
             "AND event.state = 'PUBLISHED'")
     List<Event> getAllByParam(String text, List<Long> categories, Boolean paid, LocalDateTime rangeStart,
                               LocalDateTime rangeEnd, Boolean onlyAvailable, Pageable pageable);
