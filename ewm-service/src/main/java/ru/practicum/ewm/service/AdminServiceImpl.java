@@ -121,8 +121,7 @@ public class AdminServiceImpl implements AdminService {
         }
         Compilation compilation = CompilationMapper.toCompilation(newCompilationDto);
         Set<Event> events = findEvents(newCompilationDto.getEvents());
-        //if (events != null && !events.isEmpty()) {
-        if (events != null) {
+        if (newCompilationDto.getEvents().size() == events.size()) {
             compilation.setEvents(events);
         }
         compilationRepository.save(compilation);
