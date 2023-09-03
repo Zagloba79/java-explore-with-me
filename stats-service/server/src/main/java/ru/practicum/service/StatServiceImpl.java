@@ -33,8 +33,14 @@ public class StatServiceImpl implements StatService {
     @Override
     public List<ViewStatsDto> getStatsList(List<String> uris, LocalDateTime start, LocalDateTime end, Boolean unique) {
         List<ViewStats> viewStats;
-        if (start.isAfter(end)) {
+        if (start != null && start.isAfter(end)) {
             throw new BadRequestException("Даты попутаны");
+        }
+        if (start == null) {
+            start = LocalDateTime.now().minusYears(100);
+        }
+        if (end == null) {
+            end = LocalDateTime.now().plusYears(100);
         }
         if (unique) {
             viewStats = CollectionUtils.isEmpty(uris) ?

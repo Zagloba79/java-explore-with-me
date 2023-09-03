@@ -4,10 +4,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.EndpointHitDto;
 import ru.practicum.StatClient;
+import ru.practicum.ViewStatsDto;
 import ru.practicum.ewm.dto.*;
 import ru.practicum.ewm.entity.*;
 import ru.practicum.ewm.enums.State;
@@ -71,10 +73,10 @@ public class PrivateServiceImpl implements PrivateService {
         if (events.isEmpty()) {
             return Collections.emptyList();
         }
-        for (Event event : events) {
-            saveEndpointHit(request);
-            event.setViews(event.getViews() + 1);
-        }
+        saveEndpointHit(request);
+//        for (Event event : events) {
+//            event.setViews(viewStats.get(0).getHits());
+//        }
         eventRepository.saveAll(events);
         return events.stream().map(EventMapper::toEventShortDto).collect(toList());
 
@@ -87,7 +89,12 @@ public class PrivateServiceImpl implements PrivateService {
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ObjectNotFoundException("Event not found"));
         saveEndpointHit(request);
-        event.setViews(event.getViews() + 1);
+        ResponseEntity<Object> response = statClient.getStats(null, null, List.of(request.getRequestURI()), true);
+        List<ViewStatsDto> viewStats = (List<ViewStatsDto>) response.getBody();
+        if (viewStats.size() == 1) {
+            throw new ValidationException("");
+        }
+        event.setViews(viewStats.get(0).getHits());
         eventRepository.save(event);
         return EventMapper.toEventFullDto(event);
     }
