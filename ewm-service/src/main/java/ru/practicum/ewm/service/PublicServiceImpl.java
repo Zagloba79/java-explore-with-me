@@ -85,6 +85,7 @@ public class PublicServiceImpl implements PublicService {
             event.setViews(event.getViews() + 1);
             eventShorts.add(EventMapper.toEventShortDto(event));
         }
+        eventRepository.saveAll(events);
         saveEndpointHit(request);
         return eventShorts;
     }
