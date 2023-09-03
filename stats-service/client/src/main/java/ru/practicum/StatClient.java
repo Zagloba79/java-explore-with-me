@@ -21,19 +21,13 @@ public class StatClient extends BaseClient {
     }
 
     public ResponseEntity<Object> getStats(String start, String end, List<String> uris, Boolean unique) {
-        Map<String, Object> parameters;
-        if (uris == null) {
-            parameters = Map.of("start", encodeValue(start),
-                    "end", encodeValue(end),
-                    "unique", unique);
-            return get("/stats?start={start}&end={end}&unique={unique}", parameters);
-        } else {
-            parameters = Map.of("start", start,
-                    "end", end,
-                    "uris", String.join(",", uris),
-                    "unique", unique);
-            return get("/stats?start={start}&end={end}&uris={uris}&unique={unique}", parameters);
-        }
+        Map<String, Object> parameters = Map.of(
+                "start", UrlEncodeUtils.encode(start),
+                "end", UrlEncodeUtils.encode(end),
+                "uris", uris,
+                "unique", unique
+        );
+        return get("/stats?start={start}&end={end}&uris={uris}&unique={unique}", parameters);
     }
 
     private String encodeValue(String value) {

@@ -89,10 +89,11 @@ public class PublicServiceImpl implements PublicService {
         }
         List<EventShortDto> eventShorts = new ArrayList<>();
         for (Event event : events) {
-            saveEndpointHit(request);
+            //saveEndpointHit(request);
             event.setViews(event.getViews() + 1);
             eventShorts.add(EventMapper.toEventShortDto(event));
         }
+        saveEndpointHit(request);
         return eventShorts;
     }
 
