@@ -114,7 +114,7 @@ public class PrivateServiceImpl implements PrivateService {
             throw new DataIsNotCorrectException("Нельзя менять опубликованные события");
         }
         if (event.getEventDate().isBefore(LocalDateTime.now().plusHours(2))) {
-            throw new DataIsNotCorrectException("Поздняк метаться");
+            throw new ValidationException("Поздняк метаться");
         }
         if (eventDto.getAnnotation() != null && !eventDto.getTitle().isBlank()) {
             event.setAnnotation(eventDto.getAnnotation());
@@ -128,7 +128,7 @@ public class PrivateServiceImpl implements PrivateService {
         }
         if (eventDto.getEventDate() != null) {
             if (LocalDateTime.parse(eventDto.getEventDate(), FORMATTER).isBefore(LocalDateTime.now().plusHours(2))) {
-                throw new DataIsNotCorrectException("Поздняк метаться");
+                throw new ValidationException("Поздняк метаться");
             } else {
                 event.setEventDate(LocalDateTime.parse(eventDto.getEventDate(), FORMATTER));
             }
@@ -266,7 +266,7 @@ public class PrivateServiceImpl implements PrivateService {
 
     private void dateValidate(LocalDateTime eventDate) {
         if (eventDate != null && eventDate.isBefore(LocalDateTime.now().plusHours(2))) {
-            throw new DataIsNotCorrectException("Время должно быть больше на 2 часа чем сейчас");
+            throw new ValidationException("Время должно быть больше на 2 часа чем сейчас");
         }
     }
 

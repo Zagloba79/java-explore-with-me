@@ -76,8 +76,10 @@ public class PublicServiceImpl implements PublicService {
         if (startTime.isAfter(endTime)) {
             throw new ValidationException("Даты попутаны");
         }
+        Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size,
+                Sort.by("id").descending());
         List<Event> events = eventRepository.getAllByParam(text, categories, paid, startTime,
-                endTime, onlyAvailable);
+                endTime, onlyAvailable, pageable);
         if (sort != null) {
             if (sort.equals("EVENT_DATE")) {
                 events = events.stream().sorted(Comparator.comparing(Event::getEventDate)).collect(toList());

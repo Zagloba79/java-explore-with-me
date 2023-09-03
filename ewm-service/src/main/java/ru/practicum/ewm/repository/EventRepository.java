@@ -46,5 +46,5 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             "OR (event.participantLimit > 0 )) " +
             "AND event.state = 'PUBLISHED'")
     List<Event> getAllByParam(String text, List<Long> categories, Boolean paid, LocalDateTime rangeStart,
-                              LocalDateTime rangeEnd, Boolean onlyAvailable);
+                              LocalDateTime rangeEnd, Boolean onlyAvailable, Pageable pageable);
 }

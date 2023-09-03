@@ -73,6 +73,9 @@ public class AdminServiceImpl implements AdminService {
     @Override
     @Transactional
     public CategoryDto createCategory(NewCategoryDto newCategoryDto) {
+        if (newCategoryDto.getName().isBlank()) {
+            throw new ValidationException("Название категории не может быть пустым");
+        }
         Optional<Category> categoryFromRep = categoryRepository.findByName(newCategoryDto.getName());
         if (categoryFromRep.isPresent()) {
             throw new ObjectAlreadyExistsException("Категория с таким названием уже есть");
@@ -86,8 +89,11 @@ public class AdminServiceImpl implements AdminService {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new ObjectNotFoundException("Нет данной категории"));
         Optional<Category> categoryFromRep = categoryRepository.findByName(categoryDto.getName());
-        if (categoryFromRep.isPresent()) {
+        if (categoryFromRep.isPresent() && !categoryFromRep.get().getId().equals(categoryId)) {
             throw new ObjectAlreadyExistsException("Категория с таким названием уже есть");
+        }
+        if (categoryDto.getName().length() > 50) {
+            throw new ValidationException("Очень длинное название");
         }
         category.setName(categoryDto.getName());
         return CategoryMapper.toCategoryDto(category);
@@ -106,6 +112,12 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     public CompilationDto createCompilation(NewCompilationDto newCompilationDto) {
+        if (newCompilationDto.getTitle().isBlank()) {
+            throw new ValidationException("Пустое название категории");
+        }
+        if (newCompilationDto.getTitle().length() > 50) {
+            throw new ValidationException("Очень длинное название");
+        }
         Compilation compilation = CompilationMapper.toCompilation(newCompilationDto);
         Set<Event> events = findEvents(newCompilationDto.getEvents());
         if (events != null && !events.isEmpty()) {
@@ -162,7 +174,7 @@ public class AdminServiceImpl implements AdminService {
         }
         if (eventDto.getEventDate() != null) {
             if (LocalDateTime.parse(eventDto.getEventDate(), FORMATTER).isBefore(LocalDateTime.now().plusHours(1))) {
-                throw new DataIsNotCorrectException("Поздняк метаться");
+                throw new ValidationException("Поздняк метаться");
             } else {
                 event.setEventDate(LocalDateTime.parse(eventDto.getEventDate(), FORMATTER));
             }
