@@ -75,6 +75,7 @@ public class PrivateServiceImpl implements PrivateService {
             saveEndpointHit(request);
             event.setViews(event.getViews() + 1);
         }
+        eventRepository.saveAll(events);
         return events.stream().map(EventMapper::toEventShortDto).collect(toList());
 
     }
@@ -87,6 +88,7 @@ public class PrivateServiceImpl implements PrivateService {
                 .orElseThrow(() -> new ObjectNotFoundException("Event not found"));
         saveEndpointHit(request);
         event.setViews(event.getViews() + 1);
+        eventRepository.save(event);
         return EventMapper.toEventFullDto(event);
     }
 
