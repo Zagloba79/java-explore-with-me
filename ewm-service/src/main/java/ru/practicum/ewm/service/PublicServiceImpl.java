@@ -69,13 +69,14 @@ public class PublicServiceImpl implements PublicService {
             startTime = LocalDateTime.parse(rangeStart, FORMATTER);
         }
         if (rangeEnd == null) {
-            endTime = LocalDateTime.now().plusYears(1000);
+            endTime = LocalDateTime.now().plusYears(10);
         } else {
             endTime = LocalDateTime.parse(rangeEnd, FORMATTER);
         }
         if (startTime.isAfter(endTime)) {
             throw new ValidationException("Даты попутаны");
         }
+        sort = sort.equalsIgnoreCase("event_date") ? "eventDate" : sort;
         Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size,
                 Sort.by(sort).descending());
         List<Event> events = eventRepository.getAllByParam(text, categories, paid, startTime,
