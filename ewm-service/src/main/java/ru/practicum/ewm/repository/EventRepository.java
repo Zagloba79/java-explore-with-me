@@ -27,8 +27,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
             "WHERE (event.initiator.id IN ?1 OR ?1 IS null) " +
             "AND (event.state IN ?2 OR ?2 IS null) " +
             "AND (event.category.id IN ?3 OR ?3 IS null) " +
-            "AND (event.eventDate > ?4 OR ?4 IS null) " +
-            "AND (event.eventDate < ?5 OR ?5 IS null) ")
+            "AND event.eventDate BETWEEN COALESCE(?4, 0000-01-01) AND COALESCE(?5, 9999-12-31)")
     List<Event> findAllByParam(List<Long> users, List<State> states, List<Long> categories,
                                LocalDateTime start, LocalDateTime end, Pageable pageable);
 
