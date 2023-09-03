@@ -77,19 +77,11 @@ public class PublicServiceImpl implements PublicService {
             throw new ValidationException("Даты попутаны");
         }
         Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size,
-                Sort.by("id").descending());
+                Sort.by(sort).descending());
         List<Event> events = eventRepository.getAllByParam(text, categories, paid, startTime,
                 endTime, onlyAvailable, pageable);
-        if (sort != null) {
-            if (sort.equals("EVENT_DATE")) {
-                events = events.stream().sorted(Comparator.comparing(Event::getEventDate)).collect(toList());
-            } else if (sort.equals("VIEWS")) {
-                events = events.stream().sorted(Comparator.comparing(Event::getViews)).collect(toList());
-            }
-        }
         List<EventShortDto> eventShorts = new ArrayList<>();
         for (Event event : events) {
-            //saveEndpointHit(request);
             event.setViews(event.getViews() + 1);
             eventShorts.add(EventMapper.toEventShortDto(event));
         }

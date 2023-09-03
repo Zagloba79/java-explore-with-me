@@ -117,14 +117,18 @@ public class PrivateServiceImpl implements PrivateService {
             throw new ValidationException("Поздняк метаться");
         }
         if (eventDto.getAnnotation() != null && !eventDto.getTitle().isBlank()) {
-            event.setAnnotation(eventDto.getAnnotation());
+            if (eventDto.getAnnotation().length() >= 20 && eventDto.getAnnotation().length() <= 2000) {
+                event.setAnnotation(eventDto.getAnnotation());
+            }
         }
         if (eventDto.getCategoryId() != null) {
             event.setCategory(categoryRepository.findById(eventDto.getCategoryId())
                     .orElseThrow(() -> new ObjectNotFoundException("Category not found")));
         }
         if (eventDto.getDescription() != null && !eventDto.getDescription().isBlank()) {
-            event.setDescription(eventDto.getDescription());
+            if (eventDto.getDescription().length() >= 20 && eventDto.getDescription().length() <= 7000) {
+                event.setDescription(eventDto.getDescription());
+            }
         }
         if (eventDto.getEventDate() != null) {
             if (LocalDateTime.parse(eventDto.getEventDate(), FORMATTER).isBefore(LocalDateTime.now().plusHours(2))) {
@@ -155,7 +159,9 @@ public class PrivateServiceImpl implements PrivateService {
             }
         }
         if (eventDto.getTitle() != null && !eventDto.getTitle().isBlank()) {
-            event.setTitle(eventDto.getTitle());
+            if (eventDto.getTitle().length() >= 3 && eventDto.getTitle().length() <= 120) {
+                event.setTitle(eventDto.getTitle());
+            }
         }
         return EventMapper.toEventFullDto(event);
     }
