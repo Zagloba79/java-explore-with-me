@@ -115,7 +115,7 @@ public class AdminServiceImpl implements AdminService {
         if (newCompilationDto.getTitle().isBlank()) {
             throw new ValidationException("Пустое название категории");
         }
-        if (newCompilationDto.getTitle().length() > 50) {
+        if (newCompilationDto.getTitle().length() >= 51) {
             throw new ValidationException("Очень длинное название");
         }
         Compilation compilation = CompilationMapper.toCompilation(newCompilationDto);
@@ -136,6 +136,9 @@ public class AdminServiceImpl implements AdminService {
             compilation.setPinned(updateCompilationRequest.getPinned());
         }
         if (updateCompilationRequest.getTitle() != null && (!updateCompilationRequest.getTitle().isBlank())) {
+            if (updateCompilationRequest.getTitle().length() >= 51) {
+                throw new ValidationException("Очень длинное название");
+            }
             compilation.setTitle(updateCompilationRequest.getTitle());
         }
         if (updateCompilationRequest.getEvents() != null) {
