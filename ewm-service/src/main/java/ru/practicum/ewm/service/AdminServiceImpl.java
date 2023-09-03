@@ -219,6 +219,16 @@ public class AdminServiceImpl implements AdminService {
     @Override
     public List<EventFullDto> getAllEvents(List<Long> users, List<State> states, List<Long> categories,
                                            LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size) {
+
+        if (rangeStart == null) {
+            rangeStart = LocalDateTime.now();
+        }
+        if (rangeEnd == null) {
+            rangeEnd = LocalDateTime.now().plusYears(10);
+        }
+        if (rangeStart.isAfter(rangeEnd)) {
+            throw new ValidationException("Даты попутаны");
+        }
         Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size, Sort.by("id").ascending());
         List<Event> events = eventRepository.findAllByParam(users, states, categories, rangeStart, rangeEnd, pageable);
         if (events.isEmpty()) {
