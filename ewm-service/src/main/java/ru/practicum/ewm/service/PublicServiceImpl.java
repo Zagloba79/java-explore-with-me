@@ -11,6 +11,7 @@ import ru.practicum.StatClient;
 import ru.practicum.ewm.dto.*;
 import ru.practicum.ewm.entity.*;
 import ru.practicum.ewm.exception.ObjectNotFoundException;
+import ru.practicum.ewm.exception.ValidationException;
 import ru.practicum.ewm.mapper.CategoryMapper;
 import ru.practicum.ewm.mapper.EventMapper;
 import ru.practicum.ewm.mapper.CompilationMapper;
@@ -71,9 +72,9 @@ public class PublicServiceImpl implements PublicService {
             endTime = LocalDateTime.now().plusYears(1000);
         } else {
             endTime = LocalDateTime.parse(rangeEnd, FORMATTER);
-            if (startTime.isAfter(endTime)) {
-                endTime = LocalDateTime.now().plusYears(1000);
-            }
+        }
+        if (startTime.isAfter(endTime)) {
+            throw new ValidationException("Даты попутаны");
         }
         List<Event> events = eventRepository.getAllByParam(text, categories, paid, startTime,
                 endTime, onlyAvailable);

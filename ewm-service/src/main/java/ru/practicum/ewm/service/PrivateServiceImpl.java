@@ -55,6 +55,7 @@ public class PrivateServiceImpl implements PrivateService {
         event.setCategory(categoryRepository.findById(eventDto.getCategory())
                 .orElseThrow(() -> new ObjectNotFoundException("Category not found")));
         event.setPublishedOn(LocalDateTime.now());
+        event.setConfirmedRequests(0L);
         event.setInitiator(user);
         event.setViews(0L);
         return EventMapper.toEventFullDto(eventRepository.save(event));
@@ -180,12 +181,20 @@ public class PrivateServiceImpl implements PrivateService {
         if (!event.getState().equals(PUBLISHED)) {
             throw new DataIsNotCorrectException("Event is not published");
         }
-        Request request = new Request(LocalDateTime.now(), event, user, Status.PENDING);
-        if (event.getRequestModeration().equals(false)) {
-            request.setStatus(Status.CONFIRMED);
+        Request request;
+        if (event.getParticipantLimit() == 0) {
+            request = new Request(LocalDateTime.now(), event, user, Status.CONFIRMED);
             Long confirmedRequests = Optional.ofNullable(event.getConfirmedRequests()).orElse(0L);
             event.setConfirmedRequests(confirmedRequests + 1);
             eventRepository.save(event);
+        } else {
+            request = new Request(LocalDateTime.now(), event, user, Status.PENDING);
+            if (event.getRequestModeration().equals(false)) {
+                request.setStatus(Status.CONFIRMED);
+                Long confirmedRequests = Optional.ofNullable(event.getConfirmedRequests()).orElse(0L);
+                event.setConfirmedRequests(confirmedRequests + 1);
+                eventRepository.save(event);
+            }
         }
         return RequestMapper.toParticipationRequestDto(requestRepository.save(request));
     }
