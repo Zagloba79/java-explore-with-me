@@ -2,25 +2,27 @@ package ru.practicum;
 
 import org.springframework.http.*;
 import org.springframework.lang.Nullable;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
 import java.util.Map;
 
+@Service
 public class BaseClient {
-    protected final RestTemplate rest;
-
-    public BaseClient(RestTemplate rest) {
-        this.rest = rest;
-    }
+    protected RestTemplate rest;
 
     protected ResponseEntity<Object> get(String path, @Nullable Map<String, Object> parameters) {
         return makeAndSendRequest(HttpMethod.GET, path, parameters, null);
     }
 
+//    protected <T> ResponseEntity<Object> post(String path, T body) {
+//        return post(path, null, body);
+//    }
+
     protected <T> ResponseEntity<Object> post(String path, T body) {
-        return post(path, null, body);
+        return makeAndSendRequest(HttpMethod.POST, path, null, body);
     }
 
     protected <T> ResponseEntity<Object> post(String path, @Nullable Map<String, Object> parameters, T body) {
@@ -32,18 +34,17 @@ public class BaseClient {
                                                           @Nullable Map<String, Object> parameters,
                                                           @Nullable T body) {
         HttpEntity<T> requestEntity = new HttpEntity<>(body, defaultHeaders());
-
-        ResponseEntity<Object> shareitServerResponse;
+        ResponseEntity<Object> response;
         try {
             if (parameters != null) {
-                shareitServerResponse = rest.exchange(path, method, requestEntity, Object.class, parameters);
+                response = rest.exchange(path, method, requestEntity, Object.class, parameters);
             } else {
-                shareitServerResponse = rest.exchange(path, method, requestEntity, Object.class);
+                response = rest.exchange(path, method, requestEntity, Object.class);
             }
         } catch (HttpStatusCodeException e) {
             return ResponseEntity.status(e.getStatusCode()).body(e.getResponseBodyAsByteArray());
         }
-        return prepareGatewayResponse(shareitServerResponse);
+        return prepareGatewayResponse(response);
     }
 
     private HttpHeaders defaultHeaders() {
