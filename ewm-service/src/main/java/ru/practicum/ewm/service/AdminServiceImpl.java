@@ -115,12 +115,12 @@ public class AdminServiceImpl implements AdminService {
         if (newCompilationDto.getTitle().isBlank()) {
             throw new ValidationException("Пустое название");
         }
-        if (newCompilationDto.getTitle().length() >= 51) {
+        if (newCompilationDto.getTitle().length() > 50) {
             throw new ValidationException("Очень длинное название");
         }
         Compilation compilation = CompilationMapper.toCompilation(newCompilationDto);
-        Set<Event> events = findEvents(newCompilationDto.getEvents());
-        if (newCompilationDto.getEvents().size() == events.size()) {
+        if (newCompilationDto.getEvents() != null) {
+            Set<Event> events = findEvents(newCompilationDto.getEvents());
             compilation.setEvents(events);
         }
         compilationRepository.save(compilation);
