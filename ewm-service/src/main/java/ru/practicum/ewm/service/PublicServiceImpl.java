@@ -10,12 +10,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.EndpointHitDto;
+import ru.practicum.ViewStatsDto;
 import ru.practicum.StatClient;
 import ru.practicum.ewm.dto.*;
 import ru.practicum.ewm.entity.*;
 import ru.practicum.ewm.exception.StatException;
 import ru.practicum.ewm.repository.RequestRepository;
-import ru.practicum.model.ViewStats;
 import ru.practicum.ewm.exception.ObjectNotFoundException;
 import ru.practicum.ewm.exception.ValidationException;
 import ru.practicum.ewm.mapper.CategoryMapper;
@@ -167,8 +167,8 @@ public class PublicServiceImpl implements PublicService {
         ResponseEntity<Object> response = statClient.getStats(start.format(FORMATTER),
                 LocalDateTime.now().format(FORMATTER), uris, true);
         try {
-            List<ViewStats> viewStats = Arrays.asList(objectMapper.readValue(
-                    objectMapper.writeValueAsString(response.getBody()), ViewStats[].class));
+            List<ViewStatsDto> viewStats = Arrays.asList(objectMapper.readValue(
+                    objectMapper.writeValueAsString(response.getBody()), ViewStatsDto[].class));
             viewStats.forEach(statistic -> mapView.put(
                             Long.parseLong(statistic.getUri().replaceAll("\\D+", "")),
                             statistic.getHits()
