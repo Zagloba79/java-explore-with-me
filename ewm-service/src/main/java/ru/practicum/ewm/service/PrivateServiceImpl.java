@@ -4,12 +4,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.EndpointHitDto;
-import ru.practicum.StatClient;
-import ru.practicum.ViewStatsDto;
 import ru.practicum.ewm.dto.*;
 import ru.practicum.ewm.entity.*;
 import ru.practicum.ewm.enums.State;
@@ -22,7 +18,6 @@ import ru.practicum.ewm.repository.EventRepository;
 import ru.practicum.ewm.repository.RequestRepository;
 import ru.practicum.ewm.repository.UserRepository;
 
-import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
@@ -43,7 +38,6 @@ public class PrivateServiceImpl implements PrivateService {
     private final UserRepository userRepository;
     private final RequestRepository requestRepository;
     private final CategoryRepository categoryRepository;
-    private final StatClient statClient;
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
@@ -64,7 +58,7 @@ public class PrivateServiceImpl implements PrivateService {
 
     @Override
     @Transactional
-    public List<EventShortDto> getEventsByUser(Long userId, Integer from, Integer size, HttpServletRequest request) {
+    public List<EventShortDto> getEventsByUser(Long userId, Integer from, Integer size) {
         Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size,
                 Sort.by("id").ascending());
         userRepository.findById(userId)
@@ -73,31 +67,20 @@ public class PrivateServiceImpl implements PrivateService {
         if (events.isEmpty()) {
             return Collections.emptyList();
         }
-        saveEndpointHit(request);
-//        for (Event event : events) {
-//            event.setViews(viewStats.get(0).getHits());
-//        }
-        eventRepository.saveAll(events);
         return events.stream().map(EventMapper::toEventShortDto).collect(toList());
 
     }
 
     @Override
-    public EventFullDto getEventById(Long userId, Long eventId, HttpServletRequest request) {
+    public EventFullDto getEventById(Long userId, Long eventId) {
         userRepository.findById(userId)
                 .orElseThrow(() -> new ObjectNotFoundException("User not found"));
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ObjectNotFoundException("Event not found"));
-        saveEndpointHit(request);
-        ResponseEntity<Object> response = statClient.getStats(null, null, List.of(request.getRequestURI()), true);
-        List<ViewStatsDto> viewStats = (List<ViewStatsDto>) response.getBody();
-        if (viewStats.size() == 1) {
-            throw new ValidationException("");
-        }
-        event.setViews(viewStats.get(0).getHits());
-        eventRepository.save(event);
         return EventMapper.toEventFullDto(event);
     }
+
+
 
     @Override
     public List<ParticipationRequestDto> getRequestsByEvent(Long userId, Long eventId) {
@@ -282,16 +265,5 @@ public class PrivateServiceImpl implements PrivateService {
         if (eventDate != null && eventDate.isBefore(LocalDateTime.now().plusHours(2))) {
             throw new ValidationException("Время должно быть больше на 2 часа чем сейчас");
         }
-    }
-
-    @Transactional
-    private void saveEndpointHit(HttpServletRequest request) {
-        EndpointHitDto endpointHit = EndpointHitDto.builder()
-                .app("ewm-main-service")
-                .uri(request.getRequestURI())
-                .ip(request.getRemoteAddr())
-                .timestamp(LocalDateTime.now())
-                .build();
-        statClient.create(endpointHit);
     }
 }

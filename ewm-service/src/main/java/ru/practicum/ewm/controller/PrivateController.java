@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.dto.*;
 import ru.practicum.ewm.service.PrivateService;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.util.List;
 
@@ -21,16 +20,14 @@ public class PrivateController {
     @GetMapping("/events")
     public ResponseEntity<List<EventShortDto>> getEventsByUser(@PathVariable Long userId,
                                                                @RequestParam(defaultValue = "0") Integer from,
-                                                               @RequestParam(defaultValue = "10") Integer size,
-                                                               HttpServletRequest request) {
-        return new ResponseEntity<>(service.getEventsByUser(userId, from, size, request), HttpStatus.OK);
+                                                               @RequestParam(defaultValue = "10") Integer size) {
+        return new ResponseEntity<>(service.getEventsByUser(userId, from, size), HttpStatus.OK);
     }
 
     @GetMapping("/events/{eventId}")
     public ResponseEntity<EventFullDto> getEvent(@PathVariable Long userId,
-                                                 @PathVariable Long eventId,
-                                                 HttpServletRequest request) {
-        return new ResponseEntity<>(service.getEventById(userId, eventId, request), HttpStatus.OK);
+                                                 @PathVariable Long eventId) {
+        return new ResponseEntity<>(service.getEventById(userId, eventId), HttpStatus.OK);
     }
 
     @GetMapping("/events/{eventId}/requests")

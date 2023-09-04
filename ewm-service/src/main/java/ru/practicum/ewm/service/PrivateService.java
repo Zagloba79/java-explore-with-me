@@ -2,13 +2,12 @@ package ru.practicum.ewm.service;
 
 import ru.practicum.ewm.dto.*;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 public interface PrivateService {
-    List<EventShortDto> getEventsByUser(Long userId, Integer from, Integer size, HttpServletRequest request);
+    List<EventShortDto> getEventsByUser(Long userId, Integer from, Integer size);
 
-    EventFullDto getEventById(Long userId, Long eventId, HttpServletRequest request);
+    EventFullDto getEventById(Long userId, Long eventId);
 
     List<ParticipationRequestDto> getRequestsByEvent(Long userId, Long eventId);
 
