@@ -132,9 +132,7 @@ public class AdminServiceImpl implements AdminService {
     public CompilationDto updateCompilation(long compId, UpdateCompilationRequest updateCompilationRequest) {
         Compilation compilation = compilationRepository.findById(compId)
                 .orElseThrow(() -> new ObjectNotFoundException("Compilation not found"));
-        if (updateCompilationRequest.getPinned() != null) {
-            compilation.setPinned(updateCompilationRequest.getPinned());
-        }
+        compilation.setPinned(updateCompilationRequest.isPinned());
         if (updateCompilationRequest.getTitle() != null && (!updateCompilationRequest.getTitle().isBlank())) {
             if (updateCompilationRequest.getTitle().length() >= 51) {
                 throw new ValidationException("Очень длинное название");
@@ -241,4 +239,5 @@ public class AdminServiceImpl implements AdminService {
         }
         return eventRepository.findAllByIdIn(eventIds);
     }
+
 }
