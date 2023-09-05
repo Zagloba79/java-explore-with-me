@@ -25,7 +25,7 @@ public class NewEventDto {
     private String eventDate;
     @NotNull
     private Location location;
-    private boolean paid = false;
+    private boolean paid;
     @PositiveOrZero
     private Integer participantLimit = 0;
     private boolean requestModeration = true;

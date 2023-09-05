@@ -13,7 +13,7 @@ import java.util.Collections;
 import java.util.List;
 
 @RestControllerAdvice
-public class ErrorHandler {
+public class StatErrorHandler {
     private ApiError buildApiError(List<String> errors, String message, String reason, String status) {
         return ApiError.builder()
                 .errors(errors)
