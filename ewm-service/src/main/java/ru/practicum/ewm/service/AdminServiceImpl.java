@@ -120,7 +120,7 @@ public class AdminServiceImpl implements AdminService {
         }
         Compilation compilation = CompilationMapper.toCompilation(newCompilationDto);
         Set<Event> events = findEvents(newCompilationDto.getEvents());
-        if (events != null && !events.isEmpty()) {
+        if (newCompilationDto.getEvents() != null) {
             compilation.setEvents(events);
         }
         compilationRepository.save(compilation);
@@ -132,7 +132,9 @@ public class AdminServiceImpl implements AdminService {
     public CompilationDto updateCompilation(long compId, UpdateCompilationRequest updateCompilationRequest) {
         Compilation compilation = compilationRepository.findById(compId)
                 .orElseThrow(() -> new ObjectNotFoundException("Compilation not found"));
-        compilation.setPinned(updateCompilationRequest.isPinned());
+        if (updateCompilationRequest.getPinned() != null) {
+            compilation.setPinned(updateCompilationRequest.getPinned());
+        }
         if (updateCompilationRequest.getTitle() != null && (!updateCompilationRequest.getTitle().isBlank())) {
             if (updateCompilationRequest.getTitle().length() >= 51) {
                 throw new ValidationException("Очень длинное название");
