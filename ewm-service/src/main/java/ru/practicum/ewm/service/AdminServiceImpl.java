@@ -115,12 +115,12 @@ public class AdminServiceImpl implements AdminService {
         if (newCompilationDto.getTitle().isBlank()) {
             throw new ValidationException("Пустое название");
         }
-        if (newCompilationDto.getTitle().length() >= 51) {
+        if (newCompilationDto.getTitle().length() > 50) {
             throw new ValidationException("Очень длинное название");
         }
         Compilation compilation = CompilationMapper.toCompilation(newCompilationDto);
         Set<Event> events = findEvents(newCompilationDto.getEvents());
-        if (newCompilationDto.getEvents().size() == events.size()) {
+        if (events != null && !events.isEmpty()) {
             compilation.setEvents(events);
         }
         compilationRepository.save(compilation);
@@ -132,9 +132,7 @@ public class AdminServiceImpl implements AdminService {
     public CompilationDto updateCompilation(long compId, UpdateCompilationRequest updateCompilationRequest) {
         Compilation compilation = compilationRepository.findById(compId)
                 .orElseThrow(() -> new ObjectNotFoundException("Compilation not found"));
-        if (updateCompilationRequest.getPinned() != null) {
-            compilation.setPinned(updateCompilationRequest.getPinned());
-        }
+        compilation.setPinned(updateCompilationRequest.isPinned());
         if (updateCompilationRequest.getTitle() != null && (!updateCompilationRequest.getTitle().isBlank())) {
             if (updateCompilationRequest.getTitle().length() >= 51) {
                 throw new ValidationException("Очень длинное название");
