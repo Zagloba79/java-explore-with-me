@@ -239,4 +239,5 @@ public class AdminServiceImpl implements AdminService {
         }
         return eventRepository.findAllByIdIn(eventIds);
     }
+
 }
