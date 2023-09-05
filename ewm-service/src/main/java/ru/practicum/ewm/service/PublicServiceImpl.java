@@ -64,7 +64,6 @@ public class PublicServiceImpl implements PublicService {
                                             String rangeStart, String rangeEnd,
                                             Boolean onlyAvailable, String sort, int from, int size,
                                             HttpServletRequest request) {
-
         LocalDateTime startTime;
         LocalDateTime endTime;
         if (rangeStart == null) {
@@ -87,7 +86,7 @@ public class PublicServiceImpl implements PublicService {
                 endTime, onlyAvailable, pageable);
         List<EventShortDto> eventShorts = new ArrayList<>();
         for (Event event : events) {
-            event.setViews(event.getViews() + 1);
+            //event.setViews(event.getViews() + 1);
             eventShorts.add(EventMapper.toEventShortDto(event));
         }
         eventRepository.saveAll(events);
@@ -103,8 +102,8 @@ public class PublicServiceImpl implements PublicService {
             throw new ObjectNotFoundException("Event is not published");
         }
         saveEndpointHit(request);
-        event.setViews(event.getViews() + 1);
-        eventRepository.save(event);
+        //event.setViews(event.getViews() + 1);
+        //eventRepository.save(event);
         return EventMapper.toEventFullDto(event);
     }
 
