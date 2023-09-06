@@ -1,6 +1,5 @@
 package ru.practicum.ewm.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -69,8 +68,8 @@ public class EwmStatServiceImpl implements EwmStatService {
                             statistic.getHits()
                     )
             );
-        } catch (JsonProcessingException e) {
-            throw new StatException("Произошла ошибка выполнения запроса статистики");
+        } catch (Exception e) {
+            throw new StatException("Произошла ошибка выполнения запроса статистики", e);
         }
         return mapView;
     }
