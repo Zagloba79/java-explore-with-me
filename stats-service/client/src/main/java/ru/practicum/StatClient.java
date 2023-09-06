@@ -30,8 +30,8 @@ public class StatClient extends BaseClient {
 
     public ResponseEntity<Object> getStats(String start, String end, List<String> uris, Boolean unique) {
         Map<String, Object> parameters = Map.of(
-                "start", UrlEncodeUtils.encode(start),
-                "end", UrlEncodeUtils.encode(end),
+                "start", start,
+                "end", end,
                 "uris", uris,
                 "unique", unique
         );
