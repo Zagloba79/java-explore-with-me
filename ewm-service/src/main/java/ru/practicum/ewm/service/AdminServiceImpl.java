@@ -36,11 +36,11 @@ import static ru.practicum.ewm.enums.State.PENDING;
 @Service
 @RequiredArgsConstructor
 public class AdminServiceImpl implements AdminService {
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
     private final EventRepository eventRepository;
     private final CompilationRepository compilationRepository;
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
     @Transactional

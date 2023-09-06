@@ -8,6 +8,8 @@ import java.util.Map;
 
 public interface EwmStatService {
     void saveEndpointHit(HttpServletRequest request);
+
     Map<Long, Long> getViewsFromStat(List<Event> events);
+
     Map<Long, Long> getConfirmedRequestsFromStat(List<Event> events);
 }

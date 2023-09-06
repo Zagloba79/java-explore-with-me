@@ -36,12 +36,11 @@ import static ru.practicum.ewm.enums.State.PUBLISHED;
 @Service
 @RequiredArgsConstructor
 public class PublicServiceImpl implements PublicService {
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final EwmStatService ewmStatService;
     private final CategoryRepository categoriesRepository;
     private final EventRepository eventRepository;
     private final CompilationRepository compilationRepository;
-
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
     public List<CategoryDto> getAllCategories(int from, int size) {

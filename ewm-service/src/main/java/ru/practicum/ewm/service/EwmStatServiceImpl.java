@@ -28,10 +28,10 @@ import static java.util.stream.Collectors.toMap;
 @Service
 @RequiredArgsConstructor
 public class EwmStatServiceImpl implements EwmStatService {
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final StatClient statClient;
     private final RequestRepository requestRepository;
     private final ObjectMapper objectMapper;
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final String app = "ewm_service";
 
     @Override
