@@ -7,7 +7,8 @@ import lombok.Setter;
 import ru.practicum.ewm.entity.Location;
 import ru.practicum.ewm.enums.StateActionForAdmin;
 
-import javax.validation.constraints.*;
+import javax.validation.constraints.PositiveOrZero;
+import javax.validation.constraints.Size;
 
 @Getter
 @Setter

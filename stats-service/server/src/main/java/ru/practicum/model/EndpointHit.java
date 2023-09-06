@@ -2,7 +2,6 @@ package ru.practicum.model;
 
 import lombok.*;
 
-
 import javax.persistence.*;
 import java.time.LocalDateTime;
 

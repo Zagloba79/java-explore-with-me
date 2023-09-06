@@ -2,6 +2,7 @@ package ru.practicum.ewm.mapper;
 
 import ru.practicum.ewm.dto.ParticipationRequestDto;
 import ru.practicum.ewm.entity.Request;
+
 import java.time.format.DateTimeFormatter;
 
 public class RequestMapper {

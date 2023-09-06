@@ -7,10 +7,15 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.ewm.dto.*;
-import ru.practicum.ewm.entity.*;
+import ru.practicum.ewm.entity.Event;
+import ru.practicum.ewm.entity.Request;
+import ru.practicum.ewm.entity.User;
 import ru.practicum.ewm.enums.State;
 import ru.practicum.ewm.enums.Status;
-import ru.practicum.ewm.exception.*;
+import ru.practicum.ewm.exception.DataIsNotCorrectException;
+import ru.practicum.ewm.exception.ObjectNotFoundException;
+import ru.practicum.ewm.exception.OperationIsNotSupportedException;
+import ru.practicum.ewm.exception.ValidationException;
 import ru.practicum.ewm.mapper.EventMapper;
 import ru.practicum.ewm.mapper.RequestMapper;
 import ru.practicum.ewm.repository.CategoryRepository;
@@ -25,11 +30,10 @@ import java.util.List;
 import java.util.Optional;
 
 import static java.util.stream.Collectors.toList;
-import static ru.practicum.ewm.enums.State.*;
-import static ru.practicum.ewm.enums.StateActionForUser.*;
-import static ru.practicum.ewm.enums.Status.REJECTED;
-import static ru.practicum.ewm.enums.Status.CANCELED;
-import static ru.practicum.ewm.enums.Status.CONFIRMED;
+import static ru.practicum.ewm.enums.State.PUBLISHED;
+import static ru.practicum.ewm.enums.StateActionForUser.CANCEL_REVIEW;
+import static ru.practicum.ewm.enums.StateActionForUser.SEND_TO_REVIEW;
+import static ru.practicum.ewm.enums.Status.*;
 
 @Service
 @RequiredArgsConstructor

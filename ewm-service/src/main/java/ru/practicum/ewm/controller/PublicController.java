@@ -3,7 +3,6 @@ package ru.practicum.ewm.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.dto.CategoryDto;
@@ -26,7 +25,7 @@ public class PublicController {
 
     @GetMapping("/categories")
     public ResponseEntity<List<CategoryDto>> getAllCategories(@RequestParam(defaultValue = "0") int from,
-                                              @RequestParam(defaultValue = "10") int size) {
+                                                              @RequestParam(defaultValue = "10") int size) {
         return new ResponseEntity<>(service.getAllCategories(from, size), HttpStatus.OK);
     }
 
@@ -57,8 +56,8 @@ public class PublicController {
 
     @GetMapping("/compilations")
     public ResponseEntity<List<CompilationDto>> getAllCompilations(@RequestParam(required = false) Boolean pinned,
-                                                   @RequestParam(defaultValue = "0") int from,
-                                                   @RequestParam(defaultValue = "10") int size) {
+                                                                   @RequestParam(defaultValue = "0") int from,
+                                                                   @RequestParam(defaultValue = "10") int size) {
         return new ResponseEntity<>(service.getAllCompilations(pinned, from, size), HttpStatus.OK);
     }
 

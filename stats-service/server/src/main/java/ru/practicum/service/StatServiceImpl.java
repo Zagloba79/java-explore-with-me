@@ -7,8 +7,8 @@ import org.springframework.util.CollectionUtils;
 import ru.practicum.EndpointHitDto;
 import ru.practicum.ViewStatsDto;
 import ru.practicum.mapper.EndpointHitMapper;
-import ru.practicum.model.ViewStats;
 import ru.practicum.mapper.ViewStatsMapper;
+import ru.practicum.model.ViewStats;
 import ru.practicum.repository.StatRepository;
 
 import java.time.LocalDateTime;
