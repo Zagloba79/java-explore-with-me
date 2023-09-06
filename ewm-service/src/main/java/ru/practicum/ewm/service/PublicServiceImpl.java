@@ -6,8 +6,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.EndpointHitDto;
-import ru.practicum.StatClient;
 import ru.practicum.ewm.dto.CategoryDto;
 import ru.practicum.ewm.dto.CompilationDto;
 import ru.practicum.ewm.dto.EventFullDto;
@@ -35,10 +33,11 @@ import static ru.practicum.ewm.enums.State.PUBLISHED;
 @Service
 @RequiredArgsConstructor
 public class PublicServiceImpl implements PublicService {
+    private final EwmStatService ewmStatService;
     private final CategoryRepository categoriesRepository;
     private final EventRepository eventRepository;
     private final CompilationRepository compilationRepository;
-    private final StatClient statClient;
+
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
@@ -60,6 +59,7 @@ public class PublicServiceImpl implements PublicService {
     }
 
     @Override
+    @Transactional
     public List<EventShortDto> getAllEvents(String text, List<Long> categories, Boolean paid,
                                             String rangeStart, String rangeEnd,
                                             Boolean onlyAvailable, String sort, int from, int size,
@@ -84,26 +84,33 @@ public class PublicServiceImpl implements PublicService {
                 Sort.by(sort).descending());
         List<Event> events = eventRepository.getAllByParam(text, categories, paid, startTime,
                 endTime, onlyAvailable, pageable);
+        Map<Long, Long> views = ewmStatService.getViewsFromStat(events);
+        Map<Long, Long> confirmedRequests = ewmStatService.getConfirmedRequestsFromStat(events);
         List<EventShortDto> eventShorts = new ArrayList<>();
         for (Event event : events) {
-            //event.setViews(event.getViews() + 1);
+            event.setViews(views.get(event.getId()));
+            event.setConfirmedRequests(confirmedRequests.get(event.getId()));
             eventShorts.add(EventMapper.toEventShortDto(event));
         }
         eventRepository.saveAll(events);
-        saveEndpointHit(request);
+        ewmStatService.saveEndpointHit(request);
         return eventShorts;
     }
 
     @Override
+    @Transactional
     public EventFullDto getEvent(Long id, HttpServletRequest request) {
         Event event = eventRepository.findById(id)
                 .orElseThrow(() -> new ObjectNotFoundException("Event not found"));
         if (!event.getState().equals(PUBLISHED)) {
             throw new ObjectNotFoundException("Event is not published");
         }
-        saveEndpointHit(request);
-        //event.setViews(event.getViews() + 1);
-        //eventRepository.save(event);
+        Map<Long, Long> views = ewmStatService.getViewsFromStat(List.of(event));
+        Map<Long, Long> confirmedRequests = ewmStatService.getConfirmedRequestsFromStat(List.of(event));
+        event.setViews(views.get(event.getId()));
+        event.setConfirmedRequests(confirmedRequests.get(event.getId()));
+        eventRepository.save(event);
+        ewmStatService.saveEndpointHit(request);
         return EventMapper.toEventFullDto(event);
     }
 
@@ -128,16 +135,5 @@ public class PublicServiceImpl implements PublicService {
         Compilation compilation = compilationRepository.findById(comId)
                 .orElseThrow(() -> new ObjectNotFoundException("Compilation not found"));
         return CompilationMapper.toCompilationDto(compilation);
-    }
-
-    @Transactional
-    private void saveEndpointHit(HttpServletRequest request) {
-        EndpointHitDto endpointHit = EndpointHitDto.builder()
-                .app("ewm-main-service")
-                .uri(request.getRequestURI())
-                .ip(request.getRemoteAddr())
-                .timestamp(LocalDateTime.now())
-                .build();
-        statClient.create(endpointHit);
     }
 }
