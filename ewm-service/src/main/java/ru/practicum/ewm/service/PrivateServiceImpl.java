@@ -38,11 +38,11 @@ import static ru.practicum.ewm.enums.Status.*;
 @Service
 @RequiredArgsConstructor
 public class PrivateServiceImpl implements PrivateService {
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
     private final RequestRepository requestRepository;
     private final CategoryRepository categoryRepository;
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Override
     @Transactional
@@ -83,7 +83,6 @@ public class PrivateServiceImpl implements PrivateService {
                 .orElseThrow(() -> new ObjectNotFoundException("Event not found"));
         return EventMapper.toEventFullDto(event);
     }
-
 
 
     @Override
