@@ -138,4 +138,5 @@ public class PublicServiceImpl implements PublicService {
                 .orElseThrow(() -> new ObjectNotFoundException("Compilation not found"));
         return CompilationMapper.toCompilationDto(compilation);
     }
+
 }
