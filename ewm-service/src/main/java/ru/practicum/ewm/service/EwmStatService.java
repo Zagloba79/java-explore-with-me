@@ -12,4 +12,6 @@ public interface EwmStatService {
     Map<Long, Long> getViewsFromStat(List<Event> events);
 
     Map<Long, Long> getConfirmedRequestsFromStat(List<Event> events);
+
+    void saveEndpointHit(String uri, String remoteAddr);
 }

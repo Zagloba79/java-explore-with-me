@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
@@ -36,10 +37,15 @@ public class EwmStatServiceImpl implements EwmStatService {
     @Override
     @Transactional
     public void saveEndpointHit(HttpServletRequest request) {
+        saveEndpointHit(request.getRequestURI(), request.getRemoteAddr());
+    }
+
+    @Override
+    public void saveEndpointHit(String uri, String remoteAddr) {
         EndpointHitDto endpointHit = EndpointHitDto.builder()
                 .app("ewm-main-service")
-                .uri(request.getRequestURI())
-                .ip(request.getRemoteAddr())
+                .uri(uri)
+                .ip(remoteAddr)
                 .timestamp(LocalDateTime.now())
                 .build();
         statClient.create(endpointHit);
@@ -55,9 +61,9 @@ public class EwmStatServiceImpl implements EwmStatService {
         if (start == null) {
             return Map.of();
         }
-        List<String> uris = events.stream()
+        String uris = events.stream()
                 .map(ev -> "/events/" + ev.getId())
-                .collect(toList());
+                .collect(Collectors.joining(","));
         ResponseEntity<Object> response = statClient.getStats(start.format(FORMATTER),
                 LocalDateTime.now().format(FORMATTER), uris, true);
         try {
