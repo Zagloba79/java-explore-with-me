@@ -11,33 +11,29 @@ import java.util.List;
 
 @Repository
 public interface StatRepository extends JpaRepository<EndpointHit, Long> {
-    @Query("SELECT new ru.practicum.model.ViewStats(eh.app, eh.uri, COUNT(DISTINCT eh.ip)) " +
+    @Query("SELECT new ru.practicum.model.ViewStats(eh.app, eh.uri, COUNT(*)) " +
             "FROM EndpointHit eh " +
             "WHERE eh.uri IN (?1) " +
             "AND eh.timestamp BETWEEN ?2 and ?3 " +
-            "GROUP BY eh.ip, eh.uri " +
-            "ORDER BY COUNT(distinct eh.ip) desc ")
+            "GROUP BY eh.ip, eh.app, eh.uri ")
     List<ViewStats> getUniqueHitsListByUris(List<String> uris, LocalDateTime start, LocalDateTime end);
 
-    @Query("SELECT new ru.practicum.model.ViewStats(eh.app, eh.uri, COUNT(eh.ip)) " +
+    @Query("SELECT new ru.practicum.model.ViewStats(eh.app, eh.uri, COUNT(*)) " +
             "FROM EndpointHit eh " +
             "WHERE eh.timestamp BETWEEN ?1 and ?2 " +
-            "GROUP BY eh.ip, eh.uri " +
-            "ORDER BY COUNT(distinct eh.ip) desc ")
+            "GROUP BY eh.ip, eh.app, eh.uri ")
     List<ViewStats> getUniqueHitsList(LocalDateTime start, LocalDateTime end);
 
-    @Query("SELECT new ru.practicum.model.ViewStats(eh.app, eh.uri, COUNT(eh.ip)) " +
+    @Query("SELECT new ru.practicum.model.ViewStats(eh.app, eh.uri, COUNT(*)) " +
             "FROM EndpointHit eh " +
             "WHERE eh.uri IN (?1) " +
             "AND eh.timestamp BETWEEN ?2 and ?3 " +
-            "GROUP BY eh.ip, eh.uri " +
-            "ORDER BY COUNT(eh.ip) desc ")
+            "GROUP BY eh.app, eh.uri ")
     List<ViewStats> getHitsListByUris(List<String> uris, LocalDateTime start, LocalDateTime end);
 
-    @Query("SELECT new ru.practicum.model.ViewStats(eh.app, eh.uri, COUNT(eh.ip)) " +
+    @Query("SELECT new ru.practicum.model.ViewStats(eh.app, eh.uri, COUNT(*)) " +
             "FROM EndpointHit eh " +
             "WHERE eh.timestamp BETWEEN ?1 and ?2 " +
-            "GROUP BY eh.ip, eh.uri " +
-            "ORDER BY COUNT(eh.ip) desc ")
+            "GROUP BY eh.app, eh.uri ")
     List<ViewStats> getHitsList(LocalDateTime start, LocalDateTime end);
 }
