@@ -86,8 +86,8 @@ public class AdminServiceImpl implements AdminService {
         }
         Optional<Category> categoryFromRep = categoryRepository.findByName(newCategoryDto.getName());
         if (categoryFromRep.isPresent()) {
-            //return CategoryMapper.toCategoryDto(categoryFromRep.get());
-            throw new DataIsNotCorrectException("Категория уже есть");
+            return CategoryMapper.toCategoryDto(categoryFromRep.get());
+            //throw new DataIsNotCorrectException("Категория уже есть");
         }
         return CategoryMapper.toCategoryDto(categoryRepository.save(CategoryMapper.toCategory(newCategoryDto)));
     }
