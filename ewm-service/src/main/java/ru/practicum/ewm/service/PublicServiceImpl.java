@@ -96,6 +96,7 @@ public class PublicServiceImpl implements PublicService {
             ewmStatService.saveEndpointHit("/events/" + event.getId(), request.getRemoteAddr());
         }
         eventRepository.saveAll(events);
+        ewmStatService.saveEndpointHit(request);
         return eventShorts;
     }
 
