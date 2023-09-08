@@ -29,12 +29,6 @@ public class StatServiceImpl implements StatService {
                 repository.save(EndpointHitMapper.toEndpointHit(endpointHitDto)));
     }
 
-    public List<EndpointHitDto> getAllEndpointHits(EndpointHitDto endpointHitDto) {
-        return repository.findAll().stream()
-                .map(EndpointHitMapper::toEndpointHitDto)
-                .collect(toList());
-    }
-
     @Override
     public List<ViewStatsDto> getStatsList(List<String> uris, LocalDateTime start, LocalDateTime end, Boolean unique) {
         List<ViewStats> viewStats;

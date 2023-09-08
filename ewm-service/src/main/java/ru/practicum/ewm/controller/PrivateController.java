@@ -2,7 +2,6 @@ package ru.practicum.ewm.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.dto.*;
@@ -19,58 +18,67 @@ public class PrivateController {
     public final PrivateService service;
 
     @GetMapping("/events")
-    public ResponseEntity<List<EventShortDto>> getEventsByUser(@PathVariable Long userId,
-                                                               @RequestParam(defaultValue = "0") Integer from,
-                                                               @RequestParam(defaultValue = "10") Integer size) {
-        return new ResponseEntity<>(service.getEventsByUser(userId, from, size), HttpStatus.OK);
+    @ResponseStatus(HttpStatus.OK)
+    public List<EventShortDto> getEventsByUser(@PathVariable Long userId,
+                                               @RequestParam(defaultValue = "0") Integer from,
+                                               @RequestParam(defaultValue = "10") Integer size) {
+        return service.getEventsByUser(userId, from, size);
     }
 
     @GetMapping("/events/{eventId}")
-    public ResponseEntity<EventFullDto> getEvent(@PathVariable Long userId,
-                                                 @PathVariable Long eventId) {
-        return new ResponseEntity<>(service.getEventById(userId, eventId), HttpStatus.OK);
+    @ResponseStatus(HttpStatus.OK)
+    public EventFullDto getEvent(@PathVariable Long userId,
+                                 @PathVariable Long eventId) {
+        return service.getEventById(userId, eventId);
     }
 
     @GetMapping("/events/{eventId}/requests")
-    public ResponseEntity<List<ParticipationRequestDto>> getRequestsByEvent(@PathVariable Long userId,
-                                                                            @PathVariable Long eventId) {
-        return new ResponseEntity<>(service.getRequestsByEvent(userId, eventId), HttpStatus.OK);
+    @ResponseStatus(HttpStatus.OK)
+    public List<ParticipationRequestDto> getRequestsByEvent(@PathVariable Long userId,
+                                                            @PathVariable Long eventId) {
+        return service.getRequestsByEvent(userId, eventId);
     }
 
     @PostMapping("/events")
-    public ResponseEntity<EventFullDto> createEvent(@PathVariable Long userId,
-                                                    @RequestBody @Valid NewEventDto eventDto) {
-        return new ResponseEntity<>(service.createEvent(userId, eventDto), HttpStatus.CREATED);
+    @ResponseStatus(HttpStatus.CREATED)
+    public EventFullDto createEvent(@PathVariable Long userId,
+                                    @RequestBody @Valid NewEventDto eventDto) {
+        return service.createEvent(userId, eventDto);
     }
 
     @PatchMapping("/events/{eventId}")
-    public ResponseEntity<EventFullDto> updateEvent(@PathVariable Long userId,
-                                                    @PathVariable Long eventId,
-                                                    @RequestBody @Valid UpdateEventUserRequest eventDto) {
-        return new ResponseEntity<>(service.updateEvent(userId, eventId, eventDto), HttpStatus.OK);
+    @ResponseStatus(HttpStatus.OK)
+    public EventFullDto updateEvent(@PathVariable Long userId,
+                                    @PathVariable Long eventId,
+                                    @RequestBody @Valid UpdateEventUserRequest eventDto) {
+        return service.updateEvent(userId, eventId, eventDto);
     }
 
     @PatchMapping("/events/{eventId}/requests")
-    public ResponseEntity<EventRequestStatusUpdateResult> updateRequestStatus(@PathVariable Long userId,
-                                                                              @PathVariable Long eventId,
-                                                                              @RequestBody EventRequestStatusUpdateRequest request) {
-        return new ResponseEntity<>(service.updateRequestsStatus(userId, eventId, request), HttpStatus.OK);
+    @ResponseStatus(HttpStatus.OK)
+    public EventRequestStatusUpdateResult updateRequestStatus(@PathVariable Long userId,
+                                                              @PathVariable Long eventId,
+                                                              @RequestBody EventRequestStatusUpdateRequest request) {
+        return service.updateRequestsStatus(userId, eventId, request);
     }
 
     @GetMapping("/requests")
-    public ResponseEntity<List<ParticipationRequestDto>> getRequestsByUser(@PathVariable Long userId) {
-        return new ResponseEntity<>(service.getRequestsByUser(userId), HttpStatus.OK);
+    @ResponseStatus(HttpStatus.OK)
+    public List<ParticipationRequestDto> getRequestsByUser(@PathVariable Long userId) {
+        return service.getRequestsByUser(userId);
     }
 
     @PostMapping("/requests")
-    public ResponseEntity<ParticipationRequestDto> createRequest(@PathVariable Long userId,
-                                                                 @RequestParam Long eventId) {
-        return new ResponseEntity<>(service.createRequest(userId, eventId), HttpStatus.CREATED);
+    @ResponseStatus(HttpStatus.CREATED)
+    public ParticipationRequestDto createRequest(@PathVariable Long userId,
+                                                 @RequestParam Long eventId) {
+        return service.createRequest(userId, eventId);
     }
 
     @PatchMapping("/requests/{requestsId}/cancel")
-    public ResponseEntity<ParticipationRequestDto> canselRequest(@PathVariable Long userId,
-                                                                 @PathVariable Long requestsId) {
-        return new ResponseEntity<>(service.canselRequest(userId, requestsId), HttpStatus.OK);
+    @ResponseStatus(HttpStatus.OK)
+    public ParticipationRequestDto canselRequest(@PathVariable Long userId,
+                                                 @PathVariable Long requestsId) {
+        return service.canselRequest(userId, requestsId);
     }
 }
