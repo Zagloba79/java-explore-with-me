@@ -1,15 +1,18 @@
 package ru.practicum.ewm.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.dto.*;
+import ru.practicum.ewm.enums.State;
 import ru.practicum.ewm.service.AdminService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
@@ -86,11 +89,27 @@ public class AdminController {
         return service.updateEvent(eventId, updateEventAdminRequest);
     }
 
+//    @GetMapping("/events")
+//    @ResponseStatus(HttpStatus.OK)
+//    public List<EventFullDto> getEvents(@RequestBody @Valid EventParamsDto eventParamsDto) {
+//        return service.getAllEvents(eventParamsDto.getUsers(), eventParamsDto.getStates(),
+//                eventParamsDto.getCategories(), eventParamsDto.getRangeStart(), eventParamsDto.getRangeEnd(),
+//                eventParamsDto.getFrom(), eventParamsDto.getSize());
+//    }
+
     @GetMapping("/events")
     @ResponseStatus(HttpStatus.OK)
-    public List<EventFullDto> getEvents(@RequestBody @Valid EventParamsDto eventParamsDto) {
-        return service.getAllEvents(eventParamsDto.getUsers(), eventParamsDto.getStates(),
-                eventParamsDto.getCategories(), eventParamsDto.getRangeStart(), eventParamsDto.getRangeEnd(),
-                eventParamsDto.getFrom(), eventParamsDto.getSize());
+    public List<EventFullDto> getEvents(@RequestParam(required = false) List<Long> users,
+                                                        @RequestParam(required = false) List<State> states,
+                                                        @RequestParam(required = false) List<Long> categories,
+                                                        @RequestParam(required = false)
+                                                        @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+                                                        LocalDateTime rangeStart,
+                                                        @RequestParam(required = false)
+                                                        @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+                                                        LocalDateTime rangeEnd,
+                                                        @RequestParam(defaultValue = "0") @PositiveOrZero int from,
+                                                        @RequestParam(defaultValue = "10") @Positive int size) {
+        return service.getAllEvents(users, states, categories, rangeStart, rangeEnd, from, size);
     }
 }

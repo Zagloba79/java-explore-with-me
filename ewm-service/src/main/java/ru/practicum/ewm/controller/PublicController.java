@@ -8,7 +8,8 @@ import ru.practicum.ewm.dto.*;
 import ru.practicum.ewm.service.PublicService;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.util.List;
 
 @RestController
@@ -31,13 +32,29 @@ public class PublicController {
         return service.getCategory(catId);
     }
 
+//    @GetMapping("/events")
+//    @ResponseStatus(HttpStatus.OK)
+//    public List<EventShortDto> getAllEvents(@RequestBody @Valid GetAllEventsParamsDto paramsDto,
+//                                            HttpServletRequest request) {
+//        return service.getAllEvents(paramsDto.getText(), paramsDto.getCategories(),
+//                paramsDto.getPaid(), paramsDto.getRangeStart(), paramsDto.getRangeEnd(), paramsDto.getOnlyAvailable(),
+//                paramsDto.getSort(), paramsDto.getFrom(), paramsDto.getSize(), request);
+//    }
+
     @GetMapping("/events")
     @ResponseStatus(HttpStatus.OK)
-    public List<EventShortDto> getAllEvents(@RequestBody @Valid GetAllEventsParamsDto paramsDto,
+    public List<EventShortDto> getAllEvents(@RequestParam(required = false) String text,
+                                            @RequestParam(required = false) List<Long> categories,
+                                            @RequestParam(required = false) Boolean paid,
+                                            @RequestParam(required = false) String rangeStart,
+                                            @RequestParam(required = false) String rangeEnd,
+                                            @RequestParam(defaultValue = "false") Boolean onlyAvailable,
+                                            @RequestParam(defaultValue = "eventDate") String sort,
+                                            @RequestParam(defaultValue = "0") @PositiveOrZero int from,
+                                            @RequestParam(defaultValue = "10") @Positive int size,
                                             HttpServletRequest request) {
-        return service.getAllEvents(paramsDto.getText(), paramsDto.getCategories(),
-                paramsDto.getPaid(), paramsDto.getRangeStart(), paramsDto.getRangeEnd(), paramsDto.getOnlyAvailable(),
-                paramsDto.getSort(), paramsDto.getFrom(), paramsDto.getSize(), request);
+        return service.getAllEvents(text, categories, paid, rangeStart, rangeEnd, onlyAvailable,
+                sort, from, size, request);
     }
 
     @GetMapping("/events/{id}")
