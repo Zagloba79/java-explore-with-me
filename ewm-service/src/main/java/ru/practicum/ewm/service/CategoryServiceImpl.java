@@ -25,6 +25,7 @@ import static java.util.stream.Collectors.toList;
 public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final EventRepository eventRepository;
+
     @Override
     @Transactional
     public CategoryDto createCategoryAdmin(NewCategoryDto newCategoryDto) {

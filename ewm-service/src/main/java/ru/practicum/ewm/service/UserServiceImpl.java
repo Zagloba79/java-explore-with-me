@@ -24,6 +24,7 @@ import static java.util.stream.Collectors.toList;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
+
     @Override
     @Transactional
     public UserDto createUserAdmin(NewUserRequest newUser) {
