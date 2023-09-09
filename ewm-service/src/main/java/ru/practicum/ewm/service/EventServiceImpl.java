@@ -137,12 +137,9 @@ public class EventServiceImpl implements EventService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ObjectNotFoundException("User not found"));
         dateValidate(LocalDateTime.parse(eventDto.getEventDate(), FORMATTER));
-        Event event = EventMapper.toEvent(eventDto);
+        Event event = EventMapper.toEvent(eventDto, user);
         event.setCategory(categoryRepository.findById(eventDto.getCategory())
                 .orElseThrow(() -> new ObjectNotFoundException("Category not found")));
-        event.setPublishedOn(LocalDateTime.now());
-        event.setConfirmedRequests(0L);
-        event.setInitiator(user);
         return EventMapper.toEventFullDto(eventRepository.save(event), 0L);
     }
 
@@ -302,7 +299,7 @@ public class EventServiceImpl implements EventService {
         event.setConfirmedRequests(confirmedRequests.get(event.getId()));
         eventRepository.save(event);
         saveEndpointHit(request);
-        Long viewsFromRep = getViewsFromStat(List.of(event)).get(event.getId());
+        Long viewsFromRep = views.get(event.getId());
         return EventMapper.toEventFullDto(event, viewsFromRep);
     }
 

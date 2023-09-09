@@ -5,6 +5,7 @@ import ru.practicum.ewm.dto.EventFullDto;
 import ru.practicum.ewm.dto.EventShortDto;
 import ru.practicum.ewm.dto.NewEventDto;
 import ru.practicum.ewm.entity.Event;
+import ru.practicum.ewm.entity.User;
 import ru.practicum.ewm.enums.State;
 
 import java.time.LocalDateTime;
@@ -15,15 +16,18 @@ public class EventMapper {
 
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    public Event toEvent(NewEventDto newEventDto) {
+    public Event toEvent(NewEventDto newEventDto, User user) {
         return Event.builder()
                 .annotation(newEventDto.getAnnotation())
+                .confirmedRequests(0L)
                 .createdOn(LocalDateTime.now())
                 .description(newEventDto.getDescription())
                 .eventDate(LocalDateTime.parse(newEventDto.getEventDate(), FORMATTER))
+                .initiator(user)
                 .location(newEventDto.getLocation())
                 .paid(newEventDto.isPaid())
                 .participantLimit(newEventDto.getParticipantLimit())
+                .publishedOn(LocalDateTime.now())
                 .requestModeration(newEventDto.isRequestModeration())
                 .state(State.PENDING)
                 .title(newEventDto.getTitle())
