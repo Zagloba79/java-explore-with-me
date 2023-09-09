@@ -5,9 +5,12 @@ import ru.practicum.ewm.dto.CompilationDto;
 import ru.practicum.ewm.dto.EventShortDto;
 import ru.practicum.ewm.dto.NewCompilationDto;
 import ru.practicum.ewm.entity.Compilation;
+import ru.practicum.ewm.entity.Event;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static java.util.stream.Collectors.toList;
 
@@ -22,16 +25,19 @@ public class CompilationMapper {
                 .build();
     }
 
-    public CompilationDto toCompilationDto(Compilation compilation) {
+    public CompilationDto toCompilationDto(Compilation compilation, Map<Long, Long> viewsFromRep) {
         CompilationDto compilationDto = CompilationDto.builder()
                 .id(compilation.getId())
                 .pinned(compilation.getPinned())
                 .title(compilation.getTitle())
                 .build();
-        List<EventShortDto> events = compilation.getEvents().stream()
-                .map(EventMapper::toEventShortDto)
-                .collect(toList());
-        compilationDto.setEvents(events);
+        Set<Event> events = compilation.getEvents();
+        if (events != null) {
+            List<EventShortDto> eventsShortDto = events.stream()
+                    .map(event -> EventMapper.toEventShortDto(event, viewsFromRep.get(event.getId())))
+                    .collect(toList());
+            compilationDto.setEvents(eventsShortDto);
+        }
         return compilationDto;
     }
 }

@@ -30,7 +30,7 @@ public class EventMapper {
                 .build();
     }
 
-    public EventFullDto toEventFullDto(Event event) {
+    public EventFullDto toEventFullDto(Event event, Long viewsFromRep) {
         EventFullDto eventFullDto = EventFullDto.builder()
                 .id(event.getId())
                 .annotation(event.getAnnotation())
@@ -46,16 +46,19 @@ public class EventMapper {
                 .requestModeration(event.getRequestModeration())
                 .state(event.getState().toString())
                 .title(event.getTitle())
-                .views(event.getViews())
+                .views(0L)
                 .build();
+        if (viewsFromRep != null) {
+            eventFullDto.setViews(viewsFromRep);
+        }
         if (event.getPublishedOn() != null) {
             eventFullDto.setPublishedOn(event.getPublishedOn().format(FORMATTER));
         }
         return eventFullDto;
     }
 
-    public EventShortDto toEventShortDto(Event event) {
-        return EventShortDto.builder()
+    public EventShortDto toEventShortDto(Event event, Long viewsFromRep) {
+        EventShortDto eventShortDto = EventShortDto.builder()
                 .id(event.getId())
                 .annotation(event.getAnnotation())
                 .category(CategoryMapper.toCategoryDto(event.getCategory()))
@@ -64,7 +67,11 @@ public class EventMapper {
                 .initiator(UserMapper.toUserShortDto(event.getInitiator()))
                 .paid(event.getPaid())
                 .title(event.getTitle())
-                .views(event.getViews())
+                .views(0L)
                 .build();
+        if (viewsFromRep != null) {
+            eventShortDto.setViews(viewsFromRep);
+        }
+        return eventShortDto;
     }
 }

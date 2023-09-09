@@ -47,7 +47,6 @@ public class Event {
     @Enumerated(EnumType.STRING)
     private State state;
     private String title;
-    private Long views;
     @ManyToMany(mappedBy = "events")
     private Set<Compilation> compilations = new HashSet<>();
 }

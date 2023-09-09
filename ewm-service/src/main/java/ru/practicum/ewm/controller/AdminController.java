@@ -7,7 +7,10 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.dto.*;
 import ru.practicum.ewm.enums.State;
-import ru.practicum.ewm.service.AdminService;
+import ru.practicum.ewm.service.CategoryService;
+import ru.practicum.ewm.service.CompilationService;
+import ru.practicum.ewm.service.EventService;
+import ru.practicum.ewm.service.UserService;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
@@ -20,12 +23,15 @@ import java.util.List;
 @Validated
 @RequestMapping(path = "/admin")
 public class AdminController {
-    private final AdminService service;
+    private final CategoryService categoryService;
+    private final CompilationService compilationService;
+    private final EventService eventService;
+    private final UserService userService;
 
     @PostMapping("/users")
     @ResponseStatus(HttpStatus.CREATED)
     public UserDto createUser(@RequestBody @Valid NewUserRequest newUserRequest) {
-        return service.createUser(newUserRequest);
+        return userService.createUserAdmin(newUserRequest);
     }
 
     @GetMapping("/users")
@@ -33,38 +39,38 @@ public class AdminController {
     public List<UserDto> getAllUsers(@RequestParam(required = false) List<Long> ids,
                                      @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
                                      @RequestParam(defaultValue = "10") @Positive Integer size) {
-        return service.getAllUsers(ids, from, size);
+        return userService.getAllUsersAdmin(ids, from, size);
     }
 
     @DeleteMapping("/users/{userId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteUser(@PathVariable Long userId) {
-        service.deleteUser(userId);
+        userService.deleteUserAdmin(userId);
     }
 
     @PostMapping("/categories")
     @ResponseStatus(HttpStatus.CREATED)
     public CategoryDto createCategory(@RequestBody @Valid NewCategoryDto newCategoryDto) {
-        return service.createCategory(newCategoryDto);
+        return categoryService.createCategoryAdmin(newCategoryDto);
     }
 
     @PatchMapping("/categories/{catId}")
     @ResponseStatus(HttpStatus.OK)
     public CategoryDto updateCategory(@PathVariable("catId") Long catId,
                                       @RequestBody @Valid CategoryDto categoryDto) {
-        return service.updateCategory(catId, categoryDto);
+        return categoryService.updateCategoryAdmin(catId, categoryDto);
     }
 
     @DeleteMapping("/categories/{catId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteCategory(@PathVariable Long catId) {
-        service.deleteCategory(catId);
+        categoryService.deleteCategoryAdmin(catId);
     }
 
     @PostMapping("/compilations")
     @ResponseStatus(HttpStatus.CREATED)
     public CompilationDto createCompilation(@RequestBody @Valid NewCompilationDto newCompilationDto) {
-        return service.createCompilation(newCompilationDto);
+        return compilationService.createCompilationAdmin(newCompilationDto);
     }
 
     @PatchMapping("/compilations/{compId}")
@@ -72,13 +78,13 @@ public class AdminController {
     public CompilationDto updateCompilation(@PathVariable Long compId,
                                             @RequestBody
                                             @Valid UpdateCompilationRequest updateCompilationRequest) {
-        return service.updateCompilation(compId, updateCompilationRequest);
+        return compilationService.updateCompilationAdmin(compId, updateCompilationRequest);
     }
 
     @DeleteMapping("/compilations/{compId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteCompilation(@PathVariable Long compId) {
-        service.deleteCompilation(compId);
+        compilationService.deleteCompilationAdmin(compId);
     }
 
     @PatchMapping("/events/{eventId}")
@@ -86,7 +92,7 @@ public class AdminController {
     public EventFullDto updateEvent(@PathVariable Long eventId,
                                     @RequestBody
                                     @Valid UpdateEventAdminRequest updateEventAdminRequest) {
-        return service.updateEvent(eventId, updateEventAdminRequest);
+        return eventService.updateEventAdmin(eventId, updateEventAdminRequest);
     }
 
 //    @GetMapping("/events")
@@ -110,6 +116,6 @@ public class AdminController {
                                                         LocalDateTime rangeEnd,
                                                         @RequestParam(defaultValue = "0") @PositiveOrZero int from,
                                                         @RequestParam(defaultValue = "10") @Positive int size) {
-        return service.getAllEvents(users, states, categories, rangeStart, rangeEnd, from, size);
+        return eventService.getAllEventsAdmin(users, states, categories, rangeStart, rangeEnd, from, size);
     }
 }
