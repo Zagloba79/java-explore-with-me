@@ -107,10 +107,33 @@ public class EventServiceImpl implements EventService {
         return EventMapper.toEventFullDto(event, viewsFromRep);
     }
 
-    @Override
-    public List<EventFullDto> getAllEventsAdmin(List<Long> users, List<State> states, List<Long> categories,
-                                                LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size) {
+//    @Override
+//    public List<EventFullDto> getAllEventsAdmin(List<Long> users, List<State> states, List<Long> categories,
+//                                                LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size) {
+//        if (rangeStart == null) {
+//            rangeStart = LocalDateTime.now();
+//        }
+//        if (rangeEnd == null) {
+//            rangeEnd = LocalDateTime.now().plusYears(10);
+//        }
+//        if (rangeStart.isAfter(rangeEnd)) {
+//            throw new ValidationException("Даты попутаны");
+//        }
+//        Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size, Sort.by("id").ascending());
+//        List<Event> events = eventRepository.findAllByParam(users, states, categories, rangeStart, rangeEnd, pageable);
+//        if (events.isEmpty()) {
+//            return Collections.emptyList();
+//        }
+//        Map<Long, Long> viewsFromRep = getViewsFromStat(events);
+//        return events.stream()
+//                .map(event -> EventMapper.toEventFullDto(event, viewsFromRep.get(event.getId())))
+//                .collect(toList());
+//    }
 
+    @Override
+    public List<EventFullDto> getAllEventsAdmin(EventParams eventParams) {
+        LocalDateTime rangeStart = eventParams.getRangeStart();
+        LocalDateTime rangeEnd = eventParams.getRangeEnd();
         if (rangeStart == null) {
             rangeStart = LocalDateTime.now();
         }
@@ -120,8 +143,11 @@ public class EventServiceImpl implements EventService {
         if (rangeStart.isAfter(rangeEnd)) {
             throw new ValidationException("Даты попутаны");
         }
-        Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size, Sort.by("id").ascending());
-        List<Event> events = eventRepository.findAllByParam(users, states, categories, rangeStart, rangeEnd, pageable);
+        Pageable pageable = PageRequest.of(eventParams.getFrom() > 0 ?
+                eventParams.getFrom() / eventParams.getSize() : 0, eventParams.getSize(),
+                Sort.by("id").ascending());
+        List<Event> events = eventRepository.findAllByParam(eventParams.getUsers(),
+                eventParams.getStates(), eventParams.getCategories(), rangeStart, rangeEnd, pageable);
         if (events.isEmpty()) {
             return Collections.emptyList();
         }
@@ -130,6 +156,7 @@ public class EventServiceImpl implements EventService {
                 .map(event -> EventMapper.toEventFullDto(event, viewsFromRep.get(event.getId())))
                 .collect(toList());
     }
+
 
     @Override
     @Transactional

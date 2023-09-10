@@ -38,9 +38,9 @@ public class PublicController {
 
 //    @GetMapping("/events")
 //    @ResponseStatus(HttpStatus.OK)
-//    public List<EventShortDto> getAllEvents(@RequestBody @Valid GetAllEventsParamsDto paramsDto,
+//    public List<EventShortDto> getAllEvents(@RequestBody @Validated GetAllEventsParamsDto paramsDto,
 //                                            HttpServletRequest request) {
-//        return service.getAllEvents(paramsDto.getText(), paramsDto.getCategories(),
+//        return eventService.getAllEventsPublic(paramsDto.getText(), paramsDto.getCategories(),
 //                paramsDto.getPaid(), paramsDto.getRangeStart(), paramsDto.getRangeEnd(), paramsDto.getOnlyAvailable(),
 //                paramsDto.getSort(), paramsDto.getFrom(), paramsDto.getSize(), request);
 //    }

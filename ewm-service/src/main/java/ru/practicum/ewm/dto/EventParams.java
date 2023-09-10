@@ -1,11 +1,10 @@
 package ru.practicum.ewm.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.*;
-import ru.practicum.ewm.enums.State;
 
+import lombok.*;
+import org.springframework.format.annotation.DateTimeFormat;
+import ru.practicum.ewm.enums.State;
 import javax.validation.constraints.Future;
-import javax.validation.constraints.FutureOrPresent;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.PositiveOrZero;
 import java.time.LocalDateTime;
@@ -15,15 +14,15 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class EventParamsDto {
+public class EventParams {
     List<Long> users;
     List<State> states;
     List<Long> categories;
-    @FutureOrPresent
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", shape = JsonFormat.Shape.STRING)
+    //@DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     LocalDateTime rangeStart;
     @Future
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", shape = JsonFormat.Shape.STRING)
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     LocalDateTime rangeEnd;
     @PositiveOrZero
     int from = 0;

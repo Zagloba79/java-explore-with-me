@@ -2,18 +2,18 @@ package ru.practicum.ewm.service;
 
 import ru.practicum.ewm.dto.*;
 import ru.practicum.ewm.entity.Event;
-import ru.practicum.ewm.enums.State;
 
 import javax.servlet.http.HttpServletRequest;
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
 public interface EventService {
     EventFullDto updateEventAdmin(long eventId, UpdateEventAdminRequest updateEventAdminRequest);
 
-    List<EventFullDto> getAllEventsAdmin(List<Long> users, List<State> states, List<Long> categories,
-                                         LocalDateTime periodStart, LocalDateTime periodEnd, int from, int size);
+//    List<EventFullDto> getAllEventsAdmin(List<Long> users, List<State> states, List<Long> categories,
+//                                         LocalDateTime periodStart, LocalDateTime periodEnd, int from, int size);
+
+    List<EventFullDto> getAllEventsAdmin(EventParams eventParams);
 
     List<EventShortDto> getEventsByUserPrivate(Long userId, Integer from, Integer size);
 
