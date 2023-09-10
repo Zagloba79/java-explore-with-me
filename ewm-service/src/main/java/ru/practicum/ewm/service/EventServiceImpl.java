@@ -48,6 +48,7 @@ public class EventServiceImpl implements EventService {
     private final RequestRepository requestRepository;
     private final StatClient statClient;
     private final ObjectMapper objectMapper;
+    private final String app = "ewm_service";
 
     @Override
     @Transactional
