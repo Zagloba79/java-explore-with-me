@@ -37,7 +37,7 @@ public class PublicController {
 
     @GetMapping("/events")
     @ResponseStatus(HttpStatus.OK)
-    public List<EventShortDto> getAllEvents(@Valid GetAllEventsParamsDto paramsDto,
+    public List<EventShortDto> getAllEvents(@Valid GetAllEventsParams paramsDto,
                                             HttpServletRequest request) {
         return eventService.getAllEventsPublic(paramsDto, request);
     }

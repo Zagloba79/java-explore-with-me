@@ -119,7 +119,7 @@ public class EventServiceImpl implements EventService {
             throw new ValidationException("Даты попутаны");
         }
         Pageable pageable = PageRequest.of(eventParams.getFrom() > 0 ?
-                eventParams.getFrom() / eventParams.getSize() : 0, eventParams.getSize(),
+                        eventParams.getFrom() / eventParams.getSize() : 0, eventParams.getSize(),
                 Sort.by("id").ascending());
         List<Event> events = eventRepository.findAllByParam(eventParams.getUsers(),
                 eventParams.getStates(), eventParams.getCategories(), rangeStart, rangeEnd, pageable);
@@ -249,7 +249,7 @@ public class EventServiceImpl implements EventService {
 
     @Override
     @Transactional
-    public List<EventShortDto> getAllEventsPublic(GetAllEventsParamsDto paramsDto,
+    public List<EventShortDto> getAllEventsPublic(GetAllEventsParams paramsDto,
                                                   HttpServletRequest request) {
         LocalDateTime startTime;
         LocalDateTime endTime;

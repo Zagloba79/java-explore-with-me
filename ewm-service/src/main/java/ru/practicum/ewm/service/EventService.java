@@ -22,7 +22,7 @@ public interface EventService {
 
     EventFullDto updateEventPrivate(Long userId, Long eventId, UpdateEventUserRequest eventDto);
 
-    List<EventShortDto> getAllEventsPublic(GetAllEventsParamsDto paramsDto,
+    List<EventShortDto> getAllEventsPublic(GetAllEventsParams paramsDto,
                                            HttpServletRequest request);
 
     EventFullDto getEventPublic(Long id, HttpServletRequest request);

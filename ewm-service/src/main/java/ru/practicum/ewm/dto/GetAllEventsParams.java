@@ -13,7 +13,7 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class GetAllEventsParamsDto {
+public class GetAllEventsParams {
     String text;
     List<Long> categories;
     Boolean paid;
