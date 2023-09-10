@@ -18,7 +18,6 @@ public class EventParams {
     List<Long> users;
     List<State> states;
     List<Long> categories;
-    //@DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     LocalDateTime rangeStart;
     @Future

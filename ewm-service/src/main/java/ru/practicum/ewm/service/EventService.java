@@ -10,9 +10,6 @@ import java.util.Map;
 public interface EventService {
     EventFullDto updateEventAdmin(long eventId, UpdateEventAdminRequest updateEventAdminRequest);
 
-//    List<EventFullDto> getAllEventsAdmin(List<Long> users, List<State> states, List<Long> categories,
-//                                         LocalDateTime periodStart, LocalDateTime periodEnd, int from, int size);
-
     List<EventFullDto> getAllEventsAdmin(EventParams eventParams);
 
     List<EventShortDto> getEventsByUserPrivate(Long userId, Integer from, Integer size);

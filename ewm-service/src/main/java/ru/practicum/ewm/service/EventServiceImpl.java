@@ -48,8 +48,6 @@ public class EventServiceImpl implements EventService {
     private final RequestRepository requestRepository;
     private final StatClient statClient;
     private final ObjectMapper objectMapper;
-    private final String app = "ewm_service";
-
 
     @Override
     @Transactional
@@ -107,29 +105,6 @@ public class EventServiceImpl implements EventService {
         return EventMapper.toEventFullDto(event, viewsFromRep);
     }
 
-//    @Override
-//    public List<EventFullDto> getAllEventsAdmin(List<Long> users, List<State> states, List<Long> categories,
-//                                                LocalDateTime rangeStart, LocalDateTime rangeEnd, int from, int size) {
-//        if (rangeStart == null) {
-//            rangeStart = LocalDateTime.now();
-//        }
-//        if (rangeEnd == null) {
-//            rangeEnd = LocalDateTime.now().plusYears(10);
-//        }
-//        if (rangeStart.isAfter(rangeEnd)) {
-//            throw new ValidationException("Даты попутаны");
-//        }
-//        Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size, Sort.by("id").ascending());
-//        List<Event> events = eventRepository.findAllByParam(users, states, categories, rangeStart, rangeEnd, pageable);
-//        if (events.isEmpty()) {
-//            return Collections.emptyList();
-//        }
-//        Map<Long, Long> viewsFromRep = getViewsFromStat(events);
-//        return events.stream()
-//                .map(event -> EventMapper.toEventFullDto(event, viewsFromRep.get(event.getId())))
-//                .collect(toList());
-//    }
-
     @Override
     public List<EventFullDto> getAllEventsAdmin(EventParams eventParams) {
         LocalDateTime rangeStart = eventParams.getRangeStart();
@@ -156,7 +131,6 @@ public class EventServiceImpl implements EventService {
                 .map(event -> EventMapper.toEventFullDto(event, viewsFromRep.get(event.getId())))
                 .collect(toList());
     }
-
 
     @Override
     @Transactional
@@ -334,11 +308,11 @@ public class EventServiceImpl implements EventService {
         saveEndpointHit(request.getRequestURI(), request.getRemoteAddr());
     }
 
-    public void saveEndpointHit(String uri, String remoteAddr) {
+    public void saveEndpointHit(String uri, String remoteIp) {
         EndpointHitDto endpointHit = EndpointHitDto.builder()
                 .app("ewm-main-service")
                 .uri(uri)
-                .ip(remoteAddr)
+                .ip(remoteIp)
                 .timestamp(LocalDateTime.now())
                 .build();
         statClient.create(endpointHit);

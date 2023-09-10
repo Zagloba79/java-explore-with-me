@@ -97,20 +97,4 @@ public class AdminController {
     public List<EventFullDto> getEvents(@Valid EventParams eventParams) {
         return eventService.getAllEventsAdmin(eventParams);
     }
-
-//    @GetMapping("/events")
-//    @ResponseStatus(HttpStatus.OK)
-//    public List<EventFullDto> getEvents(@RequestParam(required = false) List<Long> users,
-//                                                        @RequestParam(required = false) List<State> states,
-//                                                        @RequestParam(required = false) List<Long> categories,
-//                                                        @RequestParam(required = false)
-//                                                        @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-//                                                        LocalDateTime rangeStart,
-//                                                        @RequestParam(required = false)
-//                                                        @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-//                                                        LocalDateTime rangeEnd,
-//                                                        @RequestParam(defaultValue = "0") @PositiveOrZero int from,
-//                                                        @RequestParam(defaultValue = "10") @Positive int size) {
-//        return eventService.getAllEventsAdmin(users, states, categories, rangeStart, rangeEnd, from, size);
-//    }
 }
