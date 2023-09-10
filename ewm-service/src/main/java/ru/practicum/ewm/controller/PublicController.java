@@ -10,8 +10,7 @@ import ru.practicum.ewm.service.CompilationService;
 import ru.practicum.ewm.service.EventService;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.constraints.Positive;
-import javax.validation.constraints.PositiveOrZero;
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -36,30 +35,28 @@ public class PublicController {
         return categoryService.getCategoryPublic(catId);
     }
 
-//    @GetMapping("/events")
-//    @ResponseStatus(HttpStatus.OK)
-//    public List<EventShortDto> getAllEvents(@RequestBody @Validated GetAllEventsParamsDto paramsDto,
-//                                            HttpServletRequest request) {
-//        return eventService.getAllEventsPublic(paramsDto.getText(), paramsDto.getCategories(),
-//                paramsDto.getPaid(), paramsDto.getRangeStart(), paramsDto.getRangeEnd(), paramsDto.getOnlyAvailable(),
-//                paramsDto.getSort(), paramsDto.getFrom(), paramsDto.getSize(), request);
-//    }
-
     @GetMapping("/events")
     @ResponseStatus(HttpStatus.OK)
-    public List<EventShortDto> getAllEvents(@RequestParam(required = false) String text,
-                                            @RequestParam(required = false) List<Long> categories,
-                                            @RequestParam(required = false) Boolean paid,
-                                            @RequestParam(required = false) String rangeStart,
-                                            @RequestParam(required = false) String rangeEnd,
-                                            @RequestParam(defaultValue = "false") Boolean onlyAvailable,
-                                            @RequestParam(defaultValue = "eventDate") String sort,
-                                            @RequestParam(defaultValue = "0") @PositiveOrZero int from,
-                                            @RequestParam(defaultValue = "10") @Positive int size,
+    public List<EventShortDto> getAllEvents(@Valid GetAllEventsParamsDto paramsDto,
                                             HttpServletRequest request) {
-        return eventService.getAllEventsPublic(text, categories, paid, rangeStart, rangeEnd, onlyAvailable,
-                sort, from, size, request);
+        return eventService.getAllEventsPublic(paramsDto, request);
     }
+
+//    @GetMapping("/events")
+//    @ResponseStatus(HttpStatus.OK)
+//    public List<EventShortDto> getAllEvents(@RequestParam(required = false) String text,
+//                                            @RequestParam(required = false) List<Long> categories,
+//                                            @RequestParam(required = false) Boolean paid,
+//                                            @RequestParam(required = false) String rangeStart,
+//                                            @RequestParam(required = false) String rangeEnd,
+//                                            @RequestParam(defaultValue = "false") Boolean onlyAvailable,
+//                                            @RequestParam(defaultValue = "eventDate") String sort,
+//                                            @RequestParam(defaultValue = "0") @PositiveOrZero int from,
+//                                            @RequestParam(defaultValue = "10") @Positive int size,
+//                                            HttpServletRequest request) {
+//        return eventService.getAllEventsPublic(text, categories, paid, rangeStart, rangeEnd, onlyAvailable,
+//                sort, from, size, request);
+//    }
 
     @GetMapping("/events/{id}")
     @ResponseStatus(HttpStatus.OK)

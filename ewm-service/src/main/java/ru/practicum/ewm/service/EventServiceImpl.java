@@ -275,30 +275,30 @@ public class EventServiceImpl implements EventService {
 
     @Override
     @Transactional
-    public List<EventShortDto> getAllEventsPublic(String text, List<Long> categories, Boolean paid,
-                                                  String rangeStart, String rangeEnd,
-                                                  Boolean onlyAvailable, String sort, int from, int size,
+    public List<EventShortDto> getAllEventsPublic(GetAllEventsParamsDto paramsDto,
                                                   HttpServletRequest request) {
         LocalDateTime startTime;
         LocalDateTime endTime;
-        if (rangeStart == null) {
+        if (paramsDto.getRangeStart() == null) {
             startTime = LocalDateTime.now();
         } else {
-            startTime = LocalDateTime.parse(rangeStart, FORMATTER);
+            startTime = LocalDateTime.parse(paramsDto.getRangeStart(), FORMATTER);
         }
-        if (rangeEnd == null) {
+        if (paramsDto.getRangeEnd() == null) {
             endTime = LocalDateTime.now().plusYears(10);
         } else {
-            endTime = LocalDateTime.parse(rangeEnd, FORMATTER);
+            endTime = LocalDateTime.parse(paramsDto.getRangeEnd(), FORMATTER);
         }
         if (startTime.isAfter(endTime)) {
             throw new ValidationException("Даты попутаны");
         }
-        sort = sort.equalsIgnoreCase("event_date") ? "eventDate" : sort;
-        Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size,
+        String sort = paramsDto.getSort().equalsIgnoreCase("event_date") ?
+                "eventDate" : paramsDto.getSort();
+        Pageable pageable = PageRequest.of(paramsDto.getFrom() > 0 ?
+                        paramsDto.getFrom() / paramsDto.getSize() : 0, paramsDto.getSize(),
                 Sort.by(sort).descending());
-        List<Event> events = eventRepository.getAllByParam(text, categories, paid, startTime,
-                endTime, onlyAvailable, pageable);
+        List<Event> events = eventRepository.getAllByParam(paramsDto.getText(), paramsDto.getCategories(),
+                paramsDto.getPaid(), startTime, endTime, paramsDto.getOnlyAvailable(), pageable);
         Map<Long, Long> views = getViewsFromStat(events);
         Map<Long, Long> confirmedRequests = getConfirmedRequestsFromStat(events);
         List<EventShortDto> eventShorts = new ArrayList<>();
