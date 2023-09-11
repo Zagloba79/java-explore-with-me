@@ -5,6 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.dto.*;
+import ru.practicum.ewm.service.CommentService;
 import ru.practicum.ewm.service.EventService;
 import ru.practicum.ewm.service.RequestService;
 
@@ -18,6 +19,7 @@ import java.util.List;
 public class PrivateController {
     public final EventService eventService;
     public final RequestService requestService;
+    private final CommentService commentService;
 
     @GetMapping("/events")
     @ResponseStatus(HttpStatus.OK)
@@ -82,5 +84,25 @@ public class PrivateController {
     public ParticipationRequestDto canselRequest(@PathVariable Long userId,
                                                  @PathVariable Long requestsId) {
         return requestService.canselRequestPrivate(userId, requestsId);
+    }
+
+    @PostMapping("/events/{eventId}/comments")
+    @ResponseStatus(HttpStatus.CREATED)
+    public CommentDto createComment(@PathVariable Long userId, @PathVariable Long eventId,
+                                    @RequestBody @Validated NewCommentDto newCommentDto) {
+        return commentService.createComment(userId, eventId, newCommentDto);
+    }
+
+    @PatchMapping("/comments/{comId}")
+    @ResponseStatus(HttpStatus.OK)
+    public CommentDto updateComment(@PathVariable Long userId, @PathVariable Long commentId,
+                                   @RequestBody @Validated UpdateCommentDto updateCommentDto) {
+        return commentService.updateComment(userId, commentId, updateCommentDto);
+    }
+
+    @DeleteMapping("/comments/{comId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteComment(@PathVariable Long userId, @PathVariable Long commentId) {
+        commentService.deleteCommentPrivate(userId, commentId);
     }
 }

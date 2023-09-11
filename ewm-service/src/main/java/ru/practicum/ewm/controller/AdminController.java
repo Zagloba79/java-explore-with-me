@@ -5,10 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.dto.*;
-import ru.practicum.ewm.service.CategoryService;
-import ru.practicum.ewm.service.CompilationService;
-import ru.practicum.ewm.service.EventService;
-import ru.practicum.ewm.service.UserService;
+import ru.practicum.ewm.service.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
@@ -24,6 +21,7 @@ public class AdminController {
     private final CompilationService compilationService;
     private final EventService eventService;
     private final UserService userService;
+    private final CommentService commentService;
 
     @PostMapping("/users")
     @ResponseStatus(HttpStatus.CREATED)
@@ -96,5 +94,23 @@ public class AdminController {
     @ResponseStatus(HttpStatus.OK)
     public List<EventFullDto> getEvents(@Valid EventParams eventParams) {
         return eventService.getAllEventsAdmin(eventParams);
+    }
+
+    @GetMapping("comments/search")
+    @ResponseStatus(HttpStatus.OK)
+    public List<CommentDto> findCommentsByText(@RequestParam String text) {
+        return commentService.findCommentsByTextAdmin(text);
+    }
+
+    @GetMapping("comments/user/{userId}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<CommentDto> findCommentsByUser(@PathVariable Long userId) {
+        return commentService.findCommentsByUserAdmin(userId);
+    }
+
+    @DeleteMapping("comments/{comId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteComment(@PathVariable Long comId) {
+        commentService.deleteCommentAdmin(comId);
     }
 }
