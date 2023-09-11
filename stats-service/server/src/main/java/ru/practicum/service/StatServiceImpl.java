@@ -7,8 +7,8 @@ import org.springframework.util.CollectionUtils;
 import ru.practicum.EndpointHitDto;
 import ru.practicum.ViewStatsDto;
 import ru.practicum.mapper.EndpointHitMapper;
-import ru.practicum.model.ViewStats;
 import ru.practicum.mapper.ViewStatsMapper;
+import ru.practicum.model.ViewStats;
 import ru.practicum.repository.StatRepository;
 
 import java.time.LocalDateTime;
@@ -25,8 +25,8 @@ public class StatServiceImpl implements StatService {
     @Override
     @Transactional
     public EndpointHitDto create(EndpointHitDto endpointHitDto) {
-        return EndpointHitMapper.createEndpointHitDto(
-                repository.save(EndpointHitMapper.createEndpointHit(endpointHitDto)));
+        return EndpointHitMapper.toEndpointHitDto(
+                repository.save(EndpointHitMapper.toEndpointHit(endpointHitDto)));
     }
 
     @Override
@@ -34,10 +34,10 @@ public class StatServiceImpl implements StatService {
         List<ViewStats> viewStats;
         if (unique) {
             viewStats = CollectionUtils.isEmpty(uris) ?
-                    repository.getUniqueHitsList(start, end) : repository.getUniqueHitsList(uris, start, end);
+                    repository.getUniqueHitsList(start, end) : repository.getUniqueHitsListByUris(uris, start, end);
         } else {
             viewStats = CollectionUtils.isEmpty(uris) ?
-                    repository.getHitsList(start, end) : repository.getHitsList(uris, start, end);
+                    repository.getHitsList(start, end) : repository.getHitsListByUris(uris, start, end);
         }
         return viewStats.stream()
                 .map(ViewStatsMapper::createViewStatsDto)

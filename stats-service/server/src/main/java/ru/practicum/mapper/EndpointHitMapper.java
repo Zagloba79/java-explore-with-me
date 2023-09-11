@@ -7,21 +7,21 @@ import ru.practicum.model.EndpointHit;
 @UtilityClass
 public class EndpointHitMapper {
 
-    public static EndpointHit createEndpointHit(EndpointHitDto endpointHitDto) {
-        EndpointHit endpointHit = new EndpointHit();
-        endpointHit.setApp(endpointHitDto.getApp());
-        endpointHit.setUri(endpointHitDto.getUri());
-        endpointHit.setIp(endpointHitDto.getIp());
-        endpointHit.setTimestamp(endpointHitDto.getTimestamp());
-        return endpointHit;
+    public static EndpointHit toEndpointHit(EndpointHitDto endpointHitDto) {
+        return EndpointHit.builder()
+                .app(endpointHitDto.getApp())
+                .uri(endpointHitDto.getUri())
+                .ip(endpointHitDto.getIp())
+                .timestamp(endpointHitDto.getTimestamp())
+                .build();
     }
 
-    public static EndpointHitDto createEndpointHitDto(EndpointHit endpointHit) {
-        EndpointHitDto endpointHitDto = new EndpointHitDto();
-        endpointHitDto.setApp(endpointHit.getApp());
-        endpointHitDto.setUri(endpointHit.getUri());
-        endpointHitDto.setIp(endpointHit.getIp());
-        endpointHitDto.setTimestamp(endpointHit.getTimestamp());
-        return endpointHitDto;
+    public static EndpointHitDto toEndpointHitDto(EndpointHit endpointHit) {
+        return EndpointHitDto.builder()
+                .app(endpointHit.getApp())
+                .uri(endpointHit.getUri())
+                .ip(endpointHit.getIp())
+                .timestamp(endpointHit.getTimestamp())
+                .build();
     }
 }
