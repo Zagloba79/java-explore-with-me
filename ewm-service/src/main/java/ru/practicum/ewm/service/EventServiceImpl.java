@@ -1,38 +1,40 @@
 package ru.practicum.ewm.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.EndpointHitDto;
 import ru.practicum.StatClient;
-import ru.practicum.ViewStatsDto;
 import ru.practicum.ewm.dto.*;
 import ru.practicum.ewm.entity.Event;
 import ru.practicum.ewm.entity.Request;
 import ru.practicum.ewm.entity.User;
 import ru.practicum.ewm.enums.State;
 import ru.practicum.ewm.enums.StateActionForAdmin;
-import ru.practicum.ewm.exception.*;
+import ru.practicum.ewm.exception.DataIsNotCorrectException;
+import ru.practicum.ewm.exception.ObjectNotFoundException;
+import ru.practicum.ewm.exception.OperationIsNotSupportedException;
+import ru.practicum.ewm.exception.ValidationException;
 import ru.practicum.ewm.mapper.EventMapper;
 import ru.practicum.ewm.mapper.RequestMapper;
 import ru.practicum.ewm.repository.CategoryRepository;
 import ru.practicum.ewm.repository.EventRepository;
 import ru.practicum.ewm.repository.RequestRepository;
 import ru.practicum.ewm.repository.UserRepository;
+import ru.practicum.ewm.util.InfoFromRep;
 
 import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
 
 import static java.util.stream.Collectors.toList;
-import static java.util.stream.Collectors.toMap;
 import static ru.practicum.ewm.enums.State.PENDING;
 import static ru.practicum.ewm.enums.State.PUBLISHED;
 import static ru.practicum.ewm.enums.StateActionForUser.CANCEL_REVIEW;
@@ -47,8 +49,7 @@ public class EventServiceImpl implements EventService {
     private final UserRepository userRepository;
     private final RequestRepository requestRepository;
     private final StatClient statClient;
-    private final ObjectMapper objectMapper;
-    private final String app = "ewm_service";
+    private final InfoFromRep infoFromRep;
 
     @Override
     @Transactional
@@ -102,7 +103,7 @@ public class EventServiceImpl implements EventService {
         if (eventDto.getTitle() != null && !eventDto.getTitle().isBlank()) {
             event.setTitle(eventDto.getTitle());
         }
-        Long viewsFromRep = getViewsFromStat(List.of(event)).get(event.getId());
+        Long viewsFromRep = infoFromRep.getViewsFromStat(List.of(event)).get(event.getId());
         return EventMapper.toEventFullDto(event, viewsFromRep);
     }
 
@@ -127,7 +128,7 @@ public class EventServiceImpl implements EventService {
         if (events.isEmpty()) {
             return Collections.emptyList();
         }
-        Map<Long, Long> viewsFromRep = getViewsFromStat(events);
+        Map<Long, Long> viewsFromRep = infoFromRep.getViewsFromStat(events);
         return events.stream()
                 .map(event -> EventMapper.toEventFullDto(event, viewsFromRep.get(event.getId())))
                 .collect(toList());
@@ -156,7 +157,7 @@ public class EventServiceImpl implements EventService {
         if (events.isEmpty()) {
             return Collections.emptyList();
         }
-        Map<Long, Long> viewsFromRep = getViewsFromStat(events);
+        Map<Long, Long> viewsFromRep = infoFromRep.getViewsFromStat(events);
         return events.stream()
                 .map(event -> EventMapper.toEventShortDto(event, viewsFromRep.get(event.getId())))
                 .collect(toList());
@@ -168,7 +169,7 @@ public class EventServiceImpl implements EventService {
                 .orElseThrow(() -> new ObjectNotFoundException("User not found"));
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ObjectNotFoundException("Event not found"));
-        Map<Long, Long> viewsFromRep = getViewsFromStat(List.of(event));
+        Map<Long, Long> viewsFromRep = infoFromRep.getViewsFromStat(List.of(event));
         return EventMapper.toEventFullDto(event, viewsFromRep.get(event.getId()));
     }
 
@@ -244,7 +245,7 @@ public class EventServiceImpl implements EventService {
                 event.setTitle(eventDto.getTitle());
             }
         }
-        Map<Long, Long> viewsFromRep = getViewsFromStat(List.of(event));
+        Map<Long, Long> viewsFromRep = infoFromRep.getViewsFromStat(List.of(event));
         return EventMapper.toEventFullDto(event, viewsFromRep.get(event.getId()));
     }
 
@@ -274,14 +275,13 @@ public class EventServiceImpl implements EventService {
                 Sort.by(sort).descending());
         List<Event> events = eventRepository.getAllByParam(paramsDto.getText(), paramsDto.getCategories(),
                 paramsDto.getPaid(), startTime, endTime, paramsDto.getOnlyAvailable(), pageable);
-        Map<Long, Long> views = getViewsFromStat(events);
-        Map<Long, Long> confirmedRequests = getConfirmedRequestsFromStat(events);
+        Map<Long, Long> views = infoFromRep.getViewsFromStat(events);
+        Map<Long, Long> confirmedRequests = infoFromRep.getConfirmedRequestsFromRep(events);
         List<EventShortDto> eventShorts = new ArrayList<>();
         for (Event event : events) {
             event.setConfirmedRequests(confirmedRequests.get(event.getId()));
             Long viewsFromRep = views.get(event.getId());
             eventShorts.add(EventMapper.toEventShortDto(event, viewsFromRep));
-            saveEndpointHit("/events/" + event.getId(), request.getRemoteAddr());
         }
         eventRepository.saveAll(events);
         saveEndpointHit(request);
@@ -296,8 +296,8 @@ public class EventServiceImpl implements EventService {
         if (!event.getState().equals(PUBLISHED)) {
             throw new ObjectNotFoundException("Event is not published");
         }
-        Map<Long, Long> views = getViewsFromStat(List.of(event));
-        Map<Long, Long> confirmedRequests = getConfirmedRequestsFromStat(List.of(event));
+        Map<Long, Long> views = infoFromRep.getViewsFromStat(List.of(event));
+        Map<Long, Long> confirmedRequests = infoFromRep.getConfirmedRequestsFromRep(List.of(event));
         event.setConfirmedRequests(confirmedRequests.get(event.getId()));
         eventRepository.save(event);
         saveEndpointHit(request);
@@ -306,14 +306,10 @@ public class EventServiceImpl implements EventService {
     }
 
     public void saveEndpointHit(HttpServletRequest request) {
-        saveEndpointHit(request.getRequestURI(), request.getRemoteAddr());
-    }
-
-    public void saveEndpointHit(String uri, String remoteIp) {
         EndpointHitDto endpointHit = EndpointHitDto.builder()
                 .app("ewm-main-service")
-                .uri(uri)
-                .ip(remoteIp)
+                .uri(request.getRequestURI())
+                .ip(request.getRemoteAddr())
                 .timestamp(LocalDateTime.now())
                 .build();
         statClient.create(endpointHit);
@@ -323,42 +319,5 @@ public class EventServiceImpl implements EventService {
         if (eventDate != null && eventDate.isBefore(LocalDateTime.now().plusHours(2))) {
             throw new ValidationException("Время должно быть больше на 2 часа чем сейчас");
         }
-    }
-
-    @Override
-    public Map<Long, Long> getViewsFromStat(List<Event> events) {
-        Map<Long, Long> mapView = new HashMap<>();
-        LocalDateTime start = events.stream()
-                .map(Event::getCreatedOn)
-                .min(LocalDateTime::compareTo)
-                .orElse(null);
-        if (start == null) {
-            return Map.of();
-        }
-        String uris = events.stream()
-                .map(ev -> "/events/" + ev.getId())
-                .collect(Collectors.joining(","));
-        ResponseEntity<Object> response = statClient.getStats(start.format(FORMATTER),
-                LocalDateTime.now().format(FORMATTER), uris, true);
-        try {
-            List<ViewStatsDto> viewStats = Arrays.asList(objectMapper.readValue(
-                    objectMapper.writeValueAsString(response.getBody()), ViewStatsDto[].class));
-            viewStats.forEach(statistic -> mapView.put(
-                            Long.parseLong(statistic.getUri().replaceAll("\\D+", "")),
-                            statistic.getHits()
-                    )
-            );
-        } catch (Exception e) {
-            throw new StatException("Произошла ошибка выполнения запроса статистики", e);
-        }
-        return mapView;
-    }
-
-    public Map<Long, Long> getConfirmedRequestsFromStat(List<Event> events) {
-        List<Long> eventIds = events.stream().map(Event::getId).collect(toList());
-        List<EventConfirmedRequests> eventConfirmedRequests =
-                requestRepository.getCountOfConfirmedRequestsByEventId(eventIds);
-        return eventConfirmedRequests.stream()
-                .collect(toMap(EventConfirmedRequests::getEvent, EventConfirmedRequests::getConfirmedRequestsCount));
     }
 }

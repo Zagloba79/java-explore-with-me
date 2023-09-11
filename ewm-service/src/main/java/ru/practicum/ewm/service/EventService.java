@@ -1,11 +1,9 @@
 package ru.practicum.ewm.service;
 
 import ru.practicum.ewm.dto.*;
-import ru.practicum.ewm.entity.Event;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.List;
-import java.util.Map;
 
 public interface EventService {
     EventFullDto updateEventAdmin(long eventId, UpdateEventAdminRequest updateEventAdminRequest);
@@ -26,6 +24,4 @@ public interface EventService {
                                            HttpServletRequest request);
 
     EventFullDto getEventPublic(Long id, HttpServletRequest request);
-
-    Map<Long, Long> getViewsFromStat(List<Event> events);
 }

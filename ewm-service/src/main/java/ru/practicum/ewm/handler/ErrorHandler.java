@@ -1,7 +1,9 @@
 package ru.practicum.ewm.handler;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -52,15 +54,18 @@ public class ErrorHandler {
         return buildApiError(e, HttpStatus.FORBIDDEN);
     }
 
-    @ExceptionHandler({MethodArgumentNotValidException.class, ValidationException.class})
+    @ExceptionHandler({MethodArgumentNotValidException.class,
+            ValidationException.class,
+            MissingServletRequestParameterException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiError handleValidationException(final Exception e) {
         return buildApiError(e, HttpStatus.BAD_REQUEST);
     }
 
-    @ExceptionHandler(ObjectAlreadyExistsException.class)
+    @ExceptionHandler({ObjectAlreadyExistsException.class,
+            DataIntegrityViolationException.class})
     @ResponseStatus(HttpStatus.CONFLICT)
-    public ApiError handleObjectAlreadyExistsException(final ObjectAlreadyExistsException e) {
+    public ApiError handleObjectAlreadyExistsException(final Exception e) {
         return buildApiError(e, HttpStatus.CONFLICT);
     }
 

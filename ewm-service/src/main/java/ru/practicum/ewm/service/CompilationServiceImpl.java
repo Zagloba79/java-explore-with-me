@@ -12,10 +12,10 @@ import ru.practicum.ewm.dto.UpdateCompilationRequest;
 import ru.practicum.ewm.entity.Compilation;
 import ru.practicum.ewm.entity.Event;
 import ru.practicum.ewm.exception.ObjectNotFoundException;
-import ru.practicum.ewm.exception.ValidationException;
 import ru.practicum.ewm.mapper.CompilationMapper;
 import ru.practicum.ewm.repository.CompilationRepository;
 import ru.practicum.ewm.repository.EventRepository;
+import ru.practicum.ewm.util.InfoFromRep;
 
 import java.util.*;
 
@@ -26,16 +26,10 @@ import static java.util.stream.Collectors.toList;
 public class CompilationServiceImpl implements CompilationService {
     private final CompilationRepository compilationRepository;
     private final EventRepository eventRepository;
-    private final EventService eventService;
+    private final InfoFromRep infoFromRep;
 
     @Override
     public CompilationDto createCompilationAdmin(NewCompilationDto newCompilationDto) {
-        if (newCompilationDto.getTitle().isBlank()) {
-            throw new ValidationException("Пустое название");
-        }
-        if (newCompilationDto.getTitle().length() > 50) {
-            throw new ValidationException("Очень длинное название");
-        }
         Compilation compilation = CompilationMapper.toCompilation(newCompilationDto);
         return mapToCompilationDto(compilation, newCompilationDto.getEvents());
     }
@@ -48,10 +42,7 @@ public class CompilationServiceImpl implements CompilationService {
         if (updateCompilationRequest.getPinned() != null) {
             compilation.setPinned(updateCompilationRequest.getPinned());
         }
-        if (updateCompilationRequest.getTitle() != null && (!updateCompilationRequest.getTitle().isBlank())) {
-            if (updateCompilationRequest.getTitle().length() >= 51) {
-                throw new ValidationException("Очень длинное название");
-            }
+        if (updateCompilationRequest.getTitle() != null) {
             compilation.setTitle(updateCompilationRequest.getTitle());
         }
         return mapToCompilationDto(compilation, updateCompilationRequest.getEvents());
@@ -99,9 +90,9 @@ public class CompilationServiceImpl implements CompilationService {
     private CompilationDto mapToCompilationDto(Compilation compilation, List<Long> eventIds) {
         Set<Event> events = findEvents(eventIds);
         Map<Long, Long> viewsFromRep;
-        if (events != null) {
+        if (!events.isEmpty()) {
             compilation.setEvents(events);
-            viewsFromRep = eventService.getViewsFromStat(new ArrayList<>(events));
+            viewsFromRep = infoFromRep.getViewsFromStat(new ArrayList<>(events));
         } else {
             viewsFromRep = Collections.emptyMap();
         }
