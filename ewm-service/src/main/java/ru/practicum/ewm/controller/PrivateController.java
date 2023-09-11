@@ -90,7 +90,7 @@ public class PrivateController {
     @ResponseStatus(HttpStatus.CREATED)
     public CommentDto createComment(@PathVariable Long userId, @PathVariable Long eventId,
                                     @RequestBody @Validated NewCommentDto newCommentDto) {
-        return commentService.createComment(userId, eventId, newCommentDto);
+        return commentService.createCommentPrivate(userId, eventId, newCommentDto);
     }
 
     @PatchMapping("/comments/{comId}")

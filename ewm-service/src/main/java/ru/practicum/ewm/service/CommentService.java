@@ -8,13 +8,13 @@ import ru.practicum.ewm.dto.UpdateCommentDto;
 import java.util.List;
 
 public interface CommentService {
-    List<CommentDto> findCommentsByTextAdmin(String text);
+    List<CommentDto> findCommentsByTextAdmin(String text, int from, int size);
 
-    List<CommentDto> findCommentsByUserAdmin(Long userId);
+    List<CommentDto> findCommentsByUserAdmin(Long userId, int from, int size);
 
     void deleteCommentAdmin(Long commentId);
 
-    CommentDto createComment(Long userId, Long eventId, NewCommentDto newCommentDto);
+    CommentDto createCommentPrivate(Long userId, Long eventId, NewCommentDto newCommentDto);
 
     CommentDto updateComment(Long userId, Long commentId, UpdateCommentDto updateCommentDto);
 

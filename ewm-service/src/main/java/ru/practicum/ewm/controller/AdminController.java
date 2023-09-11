@@ -98,19 +98,23 @@ public class AdminController {
 
     @GetMapping("comments/search")
     @ResponseStatus(HttpStatus.OK)
-    public List<CommentDto> findCommentsByText(@RequestParam String text) {
-        return commentService.findCommentsByTextAdmin(text);
+    public List<CommentDto> findCommentsByText(@RequestParam String text,
+                                               @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
+                                               @RequestParam(defaultValue = "10") @Positive Integer size) {
+        return commentService.findCommentsByTextAdmin(text, from, size);
     }
 
     @GetMapping("comments/user/{userId}")
     @ResponseStatus(HttpStatus.OK)
-    public List<CommentDto> findCommentsByUser(@PathVariable Long userId) {
-        return commentService.findCommentsByUserAdmin(userId);
+    public List<CommentDto> findCommentsByUser(@PathVariable Long userId,
+                                               @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
+                                               @RequestParam(defaultValue = "10") @Positive Integer size) {
+        return commentService.findCommentsByUserAdmin(userId, from, size);
     }
 
     @DeleteMapping("comments/{comId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteComment(@PathVariable Long comId) {
+    public void deleteCommentAdmin(@PathVariable Long comId) {
         commentService.deleteCommentAdmin(comId);
     }
 }

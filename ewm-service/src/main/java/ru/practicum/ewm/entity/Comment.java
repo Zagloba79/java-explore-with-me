@@ -1,10 +1,9 @@
 package ru.practicum.ewm.entity;
 
 import lombok.*;
-import ru.practicum.ewm.dto.EventShortDto;
-import ru.practicum.ewm.dto.UserDto;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -21,12 +20,12 @@ public class Comment {
     private String text;
     @OneToOne
     @JoinColumn(nullable = false, name = "author_id", referencedColumnName = "id")
-    private UserDto author;
+    private User author;
     @OneToOne
     @JoinColumn(nullable = false, name = "event_id", referencedColumnName = "id")
-    private EventShortDto eventDto;
+    private Event event;
     @Column(name = "create_time", nullable = false)
-    private String createTime;
+    private LocalDateTime createTime;
     @Column(name = "last_update_time")
-    private String lastUpdateTime;
+    private LocalDateTime lastUpdateTime;
 }
