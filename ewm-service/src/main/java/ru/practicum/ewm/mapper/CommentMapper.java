@@ -1,8 +1,7 @@
 package ru.practicum.ewm.mapper;
 
 import lombok.experimental.UtilityClass;
-import ru.practicum.ewm.dto.CommentDto;
-import ru.practicum.ewm.dto.NewCommentDto;
+import ru.practicum.ewm.dto.*;
 import ru.practicum.ewm.entity.Comment;
 import ru.practicum.ewm.entity.Event;
 import ru.practicum.ewm.entity.User;
@@ -22,13 +21,23 @@ public class CommentMapper {
                 .build();
     }
 
-    public static CommentDto toCommentDto(Comment comment, Long viewsFromRep) {
+    public static CommentDto toCommentDto(Comment comment) {
         return CommentDto.builder()
                 .id(comment.getId())
                 .text(comment.getText())
                 .author(UserMapper.toUserDto(comment.getAuthor()))
-                .eventDto(EventMapper.toEventShortDto(comment.getEvent(), viewsFromRep))
+                .event(EventMapper.toEventCommentDto(comment.getEvent()))
                 .createTime(comment.getCreateTime().format(FORMATTER))
+                .lastUpdateTime(comment.getLastUpdateTime().format(FORMATTER))
+                .build();
+    }
+
+    public static CommentShortDto toCommentShortDto(Comment comment) {
+        return CommentShortDto.builder()
+                .id(comment.getId())
+                .text(comment.getText())
+                .author(UserMapper.toUserDto(comment.getAuthor()))
+                .eventDto(EventMapper.toEventCommentDto(comment.getEvent()))
                 .lastUpdateTime(comment.getLastUpdateTime().format(FORMATTER))
                 .build();
     }

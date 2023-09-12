@@ -100,6 +100,14 @@ public class PrivateController {
         return commentService.updateComment(userId, commentId, updateCommentDto);
     }
 
+    @GetMapping("/comments")
+    @ResponseStatus(HttpStatus.OK)
+    public List<CommentDto> getAllMyComments(@PathVariable Long userId,
+                                             @RequestParam(defaultValue = "0") int from,
+                                             @RequestParam(defaultValue = "10") int size) {
+        return commentService.getAllMyCommentsPrivate(userId, from, size);
+    }
+
     @DeleteMapping("/comments/{comId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteComment(@PathVariable Long userId, @PathVariable Long commentId) {

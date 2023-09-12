@@ -1,6 +1,7 @@
 package ru.practicum.ewm.mapper;
 
 import lombok.experimental.UtilityClass;
+import ru.practicum.ewm.dto.EventCommentDto;
 import ru.practicum.ewm.dto.EventFullDto;
 import ru.practicum.ewm.dto.EventShortDto;
 import ru.practicum.ewm.dto.NewEventDto;
@@ -77,5 +78,17 @@ public class EventMapper {
             eventShortDto.setViews(viewsFromRep);
         }
         return eventShortDto;
+    }
+
+    public EventCommentDto toEventCommentDto(Event event) {
+        return EventCommentDto.builder()
+                .id(event.getId())
+                .annotation(event.getAnnotation())
+                .category(CategoryMapper.toCategoryDto(event.getCategory()))
+                .eventDate(event.getEventDate().format(FORMATTER))
+                .initiator(UserMapper.toUserShortDto(event.getInitiator()))
+                .paid(event.getPaid())
+                .title(event.getTitle())
+                .build();
     }
 }

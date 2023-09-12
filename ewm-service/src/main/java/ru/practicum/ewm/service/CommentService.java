@@ -18,6 +18,8 @@ public interface CommentService {
 
     CommentDto updateComment(Long userId, Long commentId, UpdateCommentDto updateCommentDto);
 
+    List<CommentDto> getAllMyCommentsPrivate(Long userId, int from, int size);
+
     void deleteCommentPrivate(Long userId, Long commentId);
 
     CommentDto getComment(Long commentId);
