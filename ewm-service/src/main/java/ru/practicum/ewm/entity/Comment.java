@@ -26,6 +26,6 @@ public class Comment {
     private Event event;
     @Column(name = "create_time", nullable = false)
     private LocalDateTime createTime;
-    @Column(name = "last_update_time")
+    @Column(name = "update_time", nullable = false)
     private LocalDateTime lastUpdateTime;
 }

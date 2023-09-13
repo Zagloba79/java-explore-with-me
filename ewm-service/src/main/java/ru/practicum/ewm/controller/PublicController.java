@@ -58,21 +58,21 @@ public class PublicController {
         return compilationService.getAllCompilationsPublic(pinned, from, size);
     }
 
-    @GetMapping("/compilations/{comId}")
+    @GetMapping("/compilations/{commentId}")
     @ResponseStatus(HttpStatus.OK)
-    public CompilationDto getCompilation(@PathVariable Long comId) {
-        return compilationService.getCompilationPublic(comId);
+    public CompilationDto getCompilation(@PathVariable Long commentId) {
+        return compilationService.getCompilationPublic(commentId);
     }
 
-    @GetMapping("/comments/{comId}")
-    public CommentDto getComment(@PathVariable Long comId) {
-        return commentService.getComment(comId);
+    @GetMapping("/comments/{commentId}")
+    public CommentDto getComment(@PathVariable Long commentId) {
+        return commentService.getCommentPublic(commentId);
     }
 
     @GetMapping("/events/{eventId}/comments")
     public List<CommentShortDto> getCommentsByEvent(@PathVariable Long eventId,
                                                     @RequestParam(defaultValue = "0") int from,
                                                     @RequestParam(defaultValue = "10") int size) {
-        return commentService.getCommentsByEvent(eventId, from, size);
+        return commentService.getCommentsByEventPublic(eventId, from, size);
     }
 }

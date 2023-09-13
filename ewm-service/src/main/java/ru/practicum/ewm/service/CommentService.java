@@ -10,19 +10,15 @@ import java.util.List;
 public interface CommentService {
     List<CommentDto> findCommentsByTextAdmin(String text, int from, int size);
 
-    List<CommentDto> findCommentsByUserAdmin(Long userId, int from, int size);
-
     void deleteCommentAdmin(Long commentId);
 
     CommentDto createCommentPrivate(Long userId, Long eventId, NewCommentDto newCommentDto);
 
-    CommentDto updateComment(Long userId, Long commentId, UpdateCommentDto updateCommentDto);
-
-    List<CommentDto> getAllMyCommentsPrivate(Long userId, int from, int size);
+    CommentDto updateCommentPrivate(Long userId, Long commentId, UpdateCommentDto updateCommentDto);
 
     void deleteCommentPrivate(Long userId, Long commentId);
 
-    CommentDto getComment(Long commentId);
+    CommentDto getCommentPublic(Long commentId);
 
-    List<CommentShortDto> getCommentsByEvent(Long eventId, int from, int size);
+    List<CommentShortDto> getCommentsByEventPublic(Long eventId, int from, int size);
 }

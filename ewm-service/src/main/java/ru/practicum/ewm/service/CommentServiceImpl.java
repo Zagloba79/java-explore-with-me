@@ -13,6 +13,8 @@ import ru.practicum.ewm.dto.UpdateCommentDto;
 import ru.practicum.ewm.entity.Comment;
 import ru.practicum.ewm.entity.Event;
 import ru.practicum.ewm.entity.User;
+import ru.practicum.ewm.enums.State;
+import ru.practicum.ewm.exception.DataIsNotCorrectException;
 import ru.practicum.ewm.exception.ObjectNotFoundException;
 import ru.practicum.ewm.mapper.CommentMapper;
 import ru.practicum.ewm.repository.CommentRepository;
@@ -36,16 +38,6 @@ public class CommentServiceImpl implements CommentService {
     public List<CommentDto> findCommentsByTextAdmin(String text, int from, int size) {
         Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size, Sort.by("id").ascending());
         List<Comment> comments = commentRepository.findAllByText(text, pageable);
-        return comments.stream()
-                .map(CommentMapper::toCommentDto).collect(toList());
-    }
-
-    @Override
-    public List<CommentDto> findCommentsByUserAdmin(Long userId, int from, int size) {
-        userRepository.findById(userId)
-                .orElseThrow(() -> new ObjectNotFoundException("User not found"));
-        Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size, Sort.by("id").ascending());
-        List<Comment> comments = commentRepository.findAllByAuthor_Id(userId, pageable);
         if (comments.isEmpty()) {
             return Collections.emptyList();
         }
@@ -68,6 +60,9 @@ public class CommentServiceImpl implements CommentService {
                 .orElseThrow(() -> new ObjectNotFoundException("User not found"));
         Event event = eventRepository.findById(eventId)
                 .orElseThrow(() -> new ObjectNotFoundException("Event not found"));
+        if (!event.getState().equals(State.PUBLISHED)) {
+            throw new DataIsNotCorrectException("Нельзя комментировать неопубликованное событие");
+        }
         Comment comment = CommentMapper.toComment(newCommentDto, user, event);
         commentRepository.save(comment);
         return CommentMapper.toCommentDto(comment);
@@ -75,26 +70,12 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional
-    public CommentDto updateComment(Long userId, Long commentId, UpdateCommentDto updateCommentDto) {
+    public CommentDto updateCommentPrivate(Long userId, Long commentId, UpdateCommentDto updateCommentDto) {
         Comment comment = commentRepository.findByIdAndAuthor_Id(commentId, userId)
                 .orElseThrow(() -> new ObjectNotFoundException("Comment not found"));
         comment.setText(updateCommentDto.getText());
         comment.setLastUpdateTime(LocalDateTime.now());
         return CommentMapper.toCommentDto(comment);
-    }
-
-    @Override
-    public List<CommentDto> getAllMyCommentsPrivate(Long userId, int from, int size) {
-        userRepository.findById(userId)
-                .orElseThrow(() -> new ObjectNotFoundException("User not found"));
-        Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size,
-                Sort.by("last_update_time").descending());
-        List<Comment> comments = commentRepository.findAllByAuthor_Id(userId, pageable);
-        if (comments.isEmpty()) {
-            return Collections.emptyList();
-        }
-        return comments.stream()
-                .map(CommentMapper::toCommentDto).collect(toList());
     }
 
     @Override
@@ -106,14 +87,14 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public CommentDto getComment(Long commentId) {
+    public CommentDto getCommentPublic(Long commentId) {
         Comment comment = commentRepository.findById(commentId)
                 .orElseThrow(() -> new ObjectNotFoundException("Comment not found"));
         return CommentMapper.toCommentDto(comment);
     }
 
     @Override
-    public List<CommentShortDto> getCommentsByEvent(Long eventId, int from, int size) {
+    public List<CommentShortDto> getCommentsByEventPublic(Long eventId, int from, int size) {
         eventRepository.findById(eventId)
                 .orElseThrow(() -> new ObjectNotFoundException("Event not found"));
         Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size,

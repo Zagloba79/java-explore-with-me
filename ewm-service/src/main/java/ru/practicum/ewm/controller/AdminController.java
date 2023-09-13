@@ -96,7 +96,7 @@ public class AdminController {
         return eventService.getAllEventsAdmin(eventParams);
     }
 
-    @GetMapping("comments/search")
+    @GetMapping("/comments/search")
     @ResponseStatus(HttpStatus.OK)
     public List<CommentDto> findCommentsByText(@RequestParam String text,
                                                @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
@@ -104,15 +104,7 @@ public class AdminController {
         return commentService.findCommentsByTextAdmin(text, from, size);
     }
 
-    @GetMapping("comments/user/{userId}")
-    @ResponseStatus(HttpStatus.OK)
-    public List<CommentDto> findCommentsByUser(@PathVariable Long userId,
-                                               @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
-                                               @RequestParam(defaultValue = "10") @Positive Integer size) {
-        return commentService.findCommentsByUserAdmin(userId, from, size);
-    }
-
-    @DeleteMapping("comments/{comId}")
+    @DeleteMapping("/comments/{comId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteCommentAdmin(@PathVariable Long comId) {
         commentService.deleteCommentAdmin(comId);

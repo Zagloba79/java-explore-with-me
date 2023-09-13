@@ -93,22 +93,14 @@ public class PrivateController {
         return commentService.createCommentPrivate(userId, eventId, newCommentDto);
     }
 
-    @PatchMapping("/comments/{comId}")
+    @PatchMapping("/comments/{commentId}")
     @ResponseStatus(HttpStatus.OK)
     public CommentDto updateComment(@PathVariable Long userId, @PathVariable Long commentId,
-                                   @RequestBody @Validated UpdateCommentDto updateCommentDto) {
-        return commentService.updateComment(userId, commentId, updateCommentDto);
+                                    @RequestBody @Validated UpdateCommentDto updateCommentDto) {
+        return commentService.updateCommentPrivate(userId, commentId, updateCommentDto);
     }
 
-    @GetMapping("/comments")
-    @ResponseStatus(HttpStatus.OK)
-    public List<CommentDto> getAllMyComments(@PathVariable Long userId,
-                                             @RequestParam(defaultValue = "0") int from,
-                                             @RequestParam(defaultValue = "10") int size) {
-        return commentService.getAllMyCommentsPrivate(userId, from, size);
-    }
-
-    @DeleteMapping("/comments/{comId}")
+    @DeleteMapping("/comments/{commentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteComment(@PathVariable Long userId, @PathVariable Long commentId) {
         commentService.deleteCommentPrivate(userId, commentId);
