@@ -118,7 +118,7 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Проверка наличия события, ожидается статус ответа 404\", function()  {\r",
+              "pm.test(\"Проверка статуса события, ожидается статус ответа 404\", function()  {\r",
               "    pm.response.to.have.status(404);\r",
               "});"
             ],
@@ -139,7 +139,7 @@
           }
         },
         "url": {
-          "raw": "http://localhost:8080/users/2/events/1/comments",
+          "raw": "http://localhost:8080/users/2/events/145/comments",
           "protocol": "http",
           "host": [
             "localhost"
@@ -149,7 +149,7 @@
             "users",
             "2",
             "events",
-            "1",
+            "145",
             "comments"
           ]
         }
@@ -229,7 +229,7 @@
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Проверка наличия пользователя, ожидается статус ответа 404\", function()  {\r",
+              "pm.test(\"Проверка статуса события, ожидается статус ответа 404\", function()  {\r",
               "    pm.response.to.have.status(404);\r",
               "});"
             ],
@@ -1158,16 +1158,28 @@
       "response": []
     },
     {
-      "name": "Поиск комминтов по юзеру",
+      "name": "Создание нового коммента Copy",
       "event": [
         {
           "listen": "test",
           "script": {
             "exec": [
-              "pm.test(\"Ответ должен содержать код статуса 200 и данные в формате json\", function () {\r",
-              "    pm.response.to.have.status(200);  \r",
+              "pm.test(\"Ответ должен содержать код статуса успеха и данные в формате json\", () =>{\r",
+              "    pm.response.to.have.status(201);\r",
               "    pm.response.to.be.withBody;\r",
               "    pm.response.to.be.json;\r",
+              "});\r",
+              "\r",
+              "const source = JSON.parse(pm.request.body.raw);\r",
+              "const target = pm.response.json();\r",
+              "\r",
+              "pm.test(\"Коммент должен содержать поля: id, text, author, event, createTime, lastUpdateTime\", function () {\r",
+              "pm.expect(target).to.have.property('id');\r",
+              "pm.expect(target).to.have.property('text');\r",
+              "pm.expect(target).to.have.property('author');\r",
+              "pm.expect(target).to.have.property('event');\r",
+              "pm.expect(target).to.have.property('createTime');\r",
+              "pm.expect(target).to.have.property('lastUpdateTime');\r",
               "});"
             ],
             "type": "text/javascript"
@@ -1175,57 +1187,30 @@
         }
       ],
       "request": {
-        "method": "GET",
+        "method": "POST",
         "header": [],
-        "url": {
-          "raw": "http://localhost:8080/admin/comments/user/2",
-          "protocol": "http",
-          "host": [
-            "localhost"
-          ],
-          "port": "8080",
-          "path": [
-            "admin",
-            "comments",
-            "user",
-            "2"
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Поиск комминтов по левому юзеру",
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "exec": [
-              "pm.test(\"Ответ должен содержать код статуса 404 и данные в формате json\", function () {\r",
-              "    pm.response.to.have.status(404);  \r",
-              "    pm.response.to.be.withBody;\r",
-              "    pm.response.to.be.json;\r",
-              "});"
-            ],
-            "type": "text/javascript"
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"text\": \"новый коммент\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
           }
-        }
-      ],
-      "request": {
-        "method": "GET",
-        "header": [],
+        },
         "url": {
-          "raw": "http://localhost:8080/admin/comments/user/23",
+          "raw": "http://localhost:8080/users/2/events/1/comments",
           "protocol": "http",
           "host": [
             "localhost"
           ],
           "port": "8080",
           "path": [
-            "admin",
-            "comments",
-            "user",
-            "23"
+            "users",
+            "2",
+            "events",
+            "1",
+            "comments"
           ]
         }
       },
