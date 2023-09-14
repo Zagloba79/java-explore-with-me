@@ -1362,7 +1362,7 @@
               }
             },
             "url": {
-              "raw": "http://localhost:8080/admin/comments/users/2",
+              "raw": "http://localhost:8080/admin/comments?user=2",
               "protocol": "http",
               "host": [
                 "localhost"
@@ -1370,9 +1370,13 @@
               "port": "8080",
               "path": [
                 "admin",
-                "comments",
-                "users",
-                "2"
+                "comments"
+              ],
+              "query": [
+                {
+                  "key": "user",
+                  "value": "2"
+                }
               ]
             }
           },
