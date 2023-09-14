@@ -1527,7 +1527,7 @@
               }
             },
             "url": {
-              "raw": "http://localhost:8080/admin/comments/users/75",
+              "raw": "http://localhost:8080/admin/comments?user=750",
               "protocol": "http",
               "host": [
                 "localhost"
@@ -1535,9 +1535,13 @@
               "port": "8080",
               "path": [
                 "admin",
-                "comments",
-                "users",
-                "75"
+                "comments"
+              ],
+              "query": [
+                {
+                  "key": "user",
+                  "value": "750"
+                }
               ]
             }
           },
