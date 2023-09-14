@@ -86,23 +86,36 @@ public class PrivateController {
         return requestService.canselRequestPrivate(userId, requestsId);
     }
 
-    @PostMapping("/events/{eventId}/comments")
+    @PostMapping("/comments")
     @ResponseStatus(HttpStatus.CREATED)
-    public CommentDto createComment(@PathVariable Long userId, @PathVariable Long eventId,
+    public CommentDto createComment(@PathVariable Long userId,
                                     @RequestBody @Validated NewCommentDto newCommentDto) {
-        return commentService.createCommentPrivate(userId, eventId, newCommentDto);
+        return commentService.createCommentPrivate(userId, newCommentDto);
     }
 
-    @PatchMapping("/comments/{commentId}")
+    @PatchMapping("/comments")
     @ResponseStatus(HttpStatus.OK)
-    public CommentDto updateComment(@PathVariable Long userId, @PathVariable Long commentId,
+    public CommentDto updateComment(@PathVariable Long userId,
                                     @RequestBody @Validated UpdateCommentDto updateCommentDto) {
-        return commentService.updateCommentPrivate(userId, commentId, updateCommentDto);
+        return commentService.updateCommentPrivate(userId, updateCommentDto);
+    }
+
+    @GetMapping("event/{eventId}/comments")
+    @ResponseStatus(HttpStatus.OK)
+    public List<CommentDto> getCommentsByEvent(@PathVariable Long userId, @PathVariable Long eventId) {
+        return commentService.getCommentsByEventPrivate(userId, eventId);
+    }
+
+    @GetMapping("/comments/{commentId}")
+    @ResponseStatus(HttpStatus.OK)
+    public CommentDto getComment(@PathVariable Long userId, @PathVariable Long eventId) {
+        return commentService.getCommentPrivate(userId, eventId);
     }
 
     @DeleteMapping("/comments/{commentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteComment(@PathVariable Long userId, @PathVariable Long commentId) {
+    public void deleteComment(@PathVariable Long userId,
+                              @PathVariable Long commentId) {
         commentService.deleteCommentPrivate(userId, commentId);
     }
 }

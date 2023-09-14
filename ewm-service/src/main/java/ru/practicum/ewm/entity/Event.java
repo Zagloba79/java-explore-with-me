@@ -43,8 +43,6 @@ public class Event {
     @Column(name = "request_moderation")
     private Boolean requestModeration;
     @Enumerated(EnumType.STRING)
-        private State state;
+    private State state;
     private String title;
-//    @ManyToMany(mappedBy = "events")
-//    private Set<Compilation> compilations = new HashSet<>();
 }

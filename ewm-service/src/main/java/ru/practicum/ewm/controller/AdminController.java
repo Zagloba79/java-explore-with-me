@@ -104,9 +104,21 @@ public class AdminController {
         return commentService.findCommentsByTextAdmin(text, from, size);
     }
 
-    @DeleteMapping("/comments/{comId}")
+    @GetMapping("/comments/users/{userId}")
+    @ResponseStatus(HttpStatus.OK)
+    public List<CommentDto> findCommentsByAuthor(@PathVariable Long userId) {
+        return commentService.findCommentsByAuthorAdmin(userId);
+    }
+
+    @PatchMapping("/comments")
+    @ResponseStatus(HttpStatus.OK)
+    public CommentDto updateComment(@RequestBody @Valid UpdateCommentDto updateCommentDto) {
+        return commentService.updateCommentAdmin(updateCommentDto);
+    }
+
+    @DeleteMapping("/comments/{commentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteCommentAdmin(@PathVariable Long comId) {
-        commentService.deleteCommentAdmin(comId);
+    public void deleteCommentAdmin(@PathVariable Long commentId) {
+        commentService.deleteCommentAdmin(commentId);
     }
 }

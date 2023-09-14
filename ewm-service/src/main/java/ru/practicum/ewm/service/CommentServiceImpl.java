@@ -41,8 +41,27 @@ public class CommentServiceImpl implements CommentService {
         if (comments.isEmpty()) {
             return Collections.emptyList();
         }
-        return comments.stream()
-                .map(CommentMapper::toCommentDto).collect(toList());
+        return comments.stream().map(CommentMapper::toCommentDto).collect(toList());
+    }
+
+    @Override
+    public List<CommentDto> findCommentsByAuthorAdmin(Long userId) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new ObjectNotFoundException("User not found"));
+        List<Comment> comments = commentRepository.findAllByAuthor_Id(userId);
+        if (comments.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return comments.stream().map(CommentMapper::toCommentDto).collect(toList());
+    }
+
+    @Override
+    public CommentDto updateCommentAdmin(UpdateCommentDto updateCommentDto) {
+        Comment comment = commentRepository.findById(updateCommentDto.getCommentId())
+                .orElseThrow(() -> new ObjectNotFoundException("Comment not found"));
+        comment.setText(updateCommentDto.getText());
+        comment.setLastUpdateTime(LocalDateTime.now());
+        return CommentMapper.toCommentDto(comment);
     }
 
     @Override
@@ -55,10 +74,10 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional
-    public CommentDto createCommentPrivate(Long userId, Long eventId, NewCommentDto newCommentDto) {
+    public CommentDto createCommentPrivate(Long userId, NewCommentDto newCommentDto) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ObjectNotFoundException("User not found"));
-        Event event = eventRepository.findById(eventId)
+        Event event = eventRepository.findById(newCommentDto.getEventId())
                 .orElseThrow(() -> new ObjectNotFoundException("Event not found"));
         if (!event.getState().equals(State.PUBLISHED)) {
             throw new DataIsNotCorrectException("Нельзя комментировать неопубликованное событие");
@@ -70,11 +89,31 @@ public class CommentServiceImpl implements CommentService {
 
     @Override
     @Transactional
-    public CommentDto updateCommentPrivate(Long userId, Long commentId, UpdateCommentDto updateCommentDto) {
-        Comment comment = commentRepository.findByIdAndAuthor_Id(commentId, userId)
+    public CommentDto updateCommentPrivate(Long userId, UpdateCommentDto updateCommentDto) {
+        Comment comment = commentRepository.findByIdAndAuthor_Id(updateCommentDto.getCommentId(), userId)
                 .orElseThrow(() -> new ObjectNotFoundException("Comment not found"));
         comment.setText(updateCommentDto.getText());
         comment.setLastUpdateTime(LocalDateTime.now());
+        return CommentMapper.toCommentDto(comment);
+    }
+
+    @Override
+    public List<CommentDto> getCommentsByEventPrivate(Long userId, Long eventId) {
+        userRepository.findById(userId)
+                .orElseThrow(() -> new ObjectNotFoundException("User not found"));
+        eventRepository.findById(eventId)
+                .orElseThrow(() -> new ObjectNotFoundException("Event not found"));
+        List<Comment> comments = commentRepository.findAllByAuthor_IdAndEvent_Id(userId, eventId);
+        if (comments.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return comments.stream().map(CommentMapper::toCommentDto).collect(toList());
+    }
+
+    @Override
+    public CommentDto getCommentPrivate(Long userId, Long eventId) {
+        Comment comment = commentRepository.findByIdAndAuthor_Id(eventId, userId)
+                .orElseThrow(() -> new ObjectNotFoundException("Comment not found"));
         return CommentMapper.toCommentDto(comment);
     }
 
@@ -94,12 +133,13 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public List<CommentShortDto> getCommentsByEventPublic(Long eventId, int from, int size) {
+    public List<CommentShortDto> getCommentsByEventPublic(Long eventId) {
         eventRepository.findById(eventId)
                 .orElseThrow(() -> new ObjectNotFoundException("Event not found"));
-        Pageable pageable = PageRequest.of(from > 0 ? from / size : 0, size,
-                Sort.by("last_update_time").descending());
-        List<Comment> comments = commentRepository.getAllByEvent_Id(eventId, pageable);
+        List<Comment> comments = commentRepository.getAllByEvent_Id(eventId);
+        if (comments.isEmpty()) {
+            return Collections.emptyList();
+        }
         return comments.stream().map(CommentMapper::toCommentShortDto).collect(toList());
     }
 }

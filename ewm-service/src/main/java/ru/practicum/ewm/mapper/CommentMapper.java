@@ -21,28 +21,33 @@ public class CommentMapper {
                 .author(user)
                 .event(event)
                 .createTime(LocalDateTime.now())
-                .lastUpdateTime(LocalDateTime.now())
                 .build();
     }
 
     public static CommentDto toCommentDto(Comment comment) {
-        return CommentDto.builder()
+        CommentDto commentDto = CommentDto.builder()
                 .id(comment.getId())
                 .text(comment.getText())
                 .author(UserMapper.toUserDto(comment.getAuthor()))
                 .event(EventMapper.toEventCommentDto(comment.getEvent()))
                 .createTime(comment.getCreateTime().format(FORMATTER))
-                .lastUpdateTime(comment.getLastUpdateTime().format(FORMATTER))
                 .build();
+        if (comment.getLastUpdateTime() != null) {
+            commentDto.setLastUpdateTime(comment.getLastUpdateTime().format(FORMATTER));
+        }
+        return commentDto;
     }
 
     public static CommentShortDto toCommentShortDto(Comment comment) {
-        return CommentShortDto.builder()
+        CommentShortDto commentShortDto = CommentShortDto.builder()
                 .id(comment.getId())
                 .text(comment.getText())
                 .author(UserMapper.toUserDto(comment.getAuthor()))
                 .eventDto(EventMapper.toEventCommentDto(comment.getEvent()))
-                .lastUpdateTime(comment.getLastUpdateTime().format(FORMATTER))
                 .build();
+        if (comment.getLastUpdateTime() != null) {
+            commentShortDto.setLastUpdateTime(comment.getLastUpdateTime().format(FORMATTER));
+        }
+        return commentShortDto;
     }
 }
