@@ -1362,7 +1362,7 @@
               }
             },
             "url": {
-              "raw": "http://localhost:8080/admin/comments?user=2",
+              "raw": "http://localhost:8080/admin/comments?userId=2",
               "protocol": "http",
               "host": [
                 "localhost"
@@ -1374,7 +1374,7 @@
               ],
               "query": [
                 {
-                  "key": "user",
+                  "key": "userId",
                   "value": "2"
                 }
               ]
@@ -1531,7 +1531,7 @@
               }
             },
             "url": {
-              "raw": "http://localhost:8080/admin/comments?user=750",
+              "raw": "http://localhost:8080/admin/comments?userId=750",
               "protocol": "http",
               "host": [
                 "localhost"
@@ -1543,7 +1543,7 @@
               ],
               "query": [
                 {
-                  "key": "user",
+                  "key": "userId",
                   "value": "750"
                 }
               ]

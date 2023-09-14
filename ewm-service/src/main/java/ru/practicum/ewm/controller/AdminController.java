@@ -106,7 +106,7 @@ public class AdminController {
 
     @GetMapping("/comments")
     @ResponseStatus(HttpStatus.OK)
-    public List<CommentDto> findCommentsByAuthor(@RequestParam Long userId) {
+    public List<CommentDto> findCommentsByAuthor(@RequestParam(name="userId") Long userId) {
         return commentService.findCommentsByAuthorAdmin(userId);
     }
 
