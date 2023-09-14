@@ -367,7 +367,7 @@
           "response": []
         },
         {
-          "name": "Создание коммента незарегистрированным пользователем",
+          "name": "Ошибка, создание коммента незарегистрированным пользователем",
           "event": [
             {
               "listen": "test",
@@ -394,7 +394,7 @@
               }
             },
             "url": {
-              "raw": "http://localhost:8080/users/123/comments",
+              "raw": "http://localhost:8080/users/12345999999999/comments",
               "protocol": "http",
               "host": [
                 "localhost"
@@ -402,7 +402,7 @@
               "port": "8080",
               "path": [
                 "users",
-                "123",
+                "12345999999999",
                 "comments"
               ]
             }
