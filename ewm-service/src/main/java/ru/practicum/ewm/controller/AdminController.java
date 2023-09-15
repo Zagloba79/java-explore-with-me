@@ -5,10 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.dto.*;
-import ru.practicum.ewm.service.CategoryService;
-import ru.practicum.ewm.service.CompilationService;
-import ru.practicum.ewm.service.EventService;
-import ru.practicum.ewm.service.UserService;
+import ru.practicum.ewm.service.*;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
@@ -24,6 +21,7 @@ public class AdminController {
     private final CompilationService compilationService;
     private final EventService eventService;
     private final UserService userService;
+    private final CommentService commentService;
 
     @PostMapping("/users")
     @ResponseStatus(HttpStatus.CREATED)
@@ -96,5 +94,31 @@ public class AdminController {
     @ResponseStatus(HttpStatus.OK)
     public List<EventFullDto> getEvents(@Valid EventParams eventParams) {
         return eventService.getAllEventsAdmin(eventParams);
+    }
+
+    @GetMapping("/comments/search")
+    @ResponseStatus(HttpStatus.OK)
+    public List<CommentDto> findCommentsByText(@RequestParam String text,
+                                               @RequestParam(defaultValue = "0") @PositiveOrZero Integer from,
+                                               @RequestParam(defaultValue = "10") @Positive Integer size) {
+        return commentService.findCommentsByTextAdmin(text, from, size);
+    }
+
+    @GetMapping("/comments")
+    @ResponseStatus(HttpStatus.OK)
+    public List<CommentDto> findCommentsByAuthor(@RequestParam(name = "userId") Long userId) {
+        return commentService.findCommentsByAuthorAdmin(userId);
+    }
+
+    @PatchMapping("/comments")
+    @ResponseStatus(HttpStatus.OK)
+    public CommentDto updateComment(@RequestBody @Valid UpdateCommentDto updateCommentDto) {
+        return commentService.updateCommentAdmin(updateCommentDto);
+    }
+
+    @DeleteMapping("/comments/{commentId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteCommentAdmin(@PathVariable Long commentId) {
+        commentService.deleteCommentAdmin(commentId);
     }
 }

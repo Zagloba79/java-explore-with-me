@@ -5,8 +5,6 @@ import ru.practicum.ewm.enums.State;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
 
 @Getter
 @Setter
@@ -47,6 +45,4 @@ public class Event {
     @Enumerated(EnumType.STRING)
     private State state;
     private String title;
-    @ManyToMany(mappedBy = "events")
-    private Set<Compilation> compilations = new HashSet<>();
 }

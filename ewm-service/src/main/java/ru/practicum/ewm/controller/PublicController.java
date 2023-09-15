@@ -6,6 +6,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.ewm.dto.*;
 import ru.practicum.ewm.service.CategoryService;
+import ru.practicum.ewm.service.CommentService;
 import ru.practicum.ewm.service.CompilationService;
 import ru.practicum.ewm.service.EventService;
 
@@ -21,6 +22,7 @@ public class PublicController {
     public final CategoryService categoryService;
     public final CompilationService compilationService;
     public final EventService eventService;
+    private final CommentService commentService;
 
     @GetMapping("/categories")
     @ResponseStatus(HttpStatus.OK)
@@ -60,5 +62,15 @@ public class PublicController {
     @ResponseStatus(HttpStatus.OK)
     public CompilationDto getCompilation(@PathVariable Long comId) {
         return compilationService.getCompilationPublic(comId);
+    }
+
+    @GetMapping("/comments/{commentId}")
+    public CommentDto getComment(@PathVariable Long commentId) {
+        return commentService.getCommentPublic(commentId);
+    }
+
+    @GetMapping("/comments")
+    public List<CommentShortDto> getCommentsByEvent(@RequestParam Long eventId) {
+        return commentService.getCommentsByEventPublic(eventId);
     }
 }
